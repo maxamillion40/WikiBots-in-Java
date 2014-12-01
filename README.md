@@ -1,4 +1,8 @@
-WikiMonitor-VoxBot-in-Java
+WikiBots-in-Java
 ==========================
 
-A recreate of 2 Scratch Wiki bots.
+A recreate of 3 Scratch Wiki bots.
+Progress:
+WikiMonior-
+VoxBot-
+ThisIsAnAccount-
