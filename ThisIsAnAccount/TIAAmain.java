@@ -53,15 +53,15 @@ public class TIAAmain extends java.applet.Applet {
 		} catch (MalformedURLException e) {
 			System.err.println(e.getMessage());
 		}
-        BufferedReader in = new BufferedReader(
-        new InputStreamReader(oracle.openStream()));
+        	BufferedReader in = new BufferedReader(
+        	new InputStreamReader(oracle.openStream()));
 
-        ArrayList<String> page = new ArrayList<String>();
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            page.add(inputLine);
-        }
-        in.close();
-        return page.toArray(new String[page.size()]);
+        	ArrayList<String> page = new ArrayList<String>();
+        	String inputLine;
+        	while ((inputLine = in.readLine()) != null) {
+        	    page.add(inputLine);
+        	}
+        	in.close();
+        	return page.toArray(new String[page.size()]);
 	}
 }
