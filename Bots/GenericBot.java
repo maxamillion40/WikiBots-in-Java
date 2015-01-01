@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class GBmain extends java.applet.Applet {
+public class GenericBot extends java.applet.Applet {
 	
 	/**
 	 * Generic Bot Code Starts Below
