@@ -12,6 +12,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	/**
 	 * Generic Bot Code Starts Below
+	 * Please note that all bot classes will be children of this class.
 	 */
 	
 	private static final long serialVersionUID = 1L;
@@ -29,11 +30,11 @@ public class GenericBot extends java.applet.Applet {
 		//Window code.
 		g.setColor(Color.BLACK);
 		g.drawString("Applet background", 0, 50);
-		main(null);
+		//Call main method here in children.
 	}
 	
 	static public void main(String[] args) {
-		//This is where we start our actual code! :D
+		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("Show (block)");
 		for (String st : webpage) {
 			System.out.println(st);
