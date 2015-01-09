@@ -17,6 +17,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	private static final long serialVersionUID = 1L;
 	static Page webpage;
+	static ArrayList<String> log = new ArrayList<String>();
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -36,14 +37,20 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
-		webpage = getWikiPage("Show (block)");
+		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
 		for (int i = 0; i < webpage.getLineCount(); i++) {
 			System.out.println(webpage.getContentLine(i));
 		}
-		System.out.println("Templates:");
-		ArrayList<String> temp = webpage.getTemplates();
+
+		ArrayList<Template> temp = webpage.getTemplates();
+		ArrayList<Link> links;
 		for (int i = 0; i < temp.size(); i ++) {
-			System.out.println(temp.get(i));
+			links = temp.get(i).getLinks();
+			System.out.print("Template: " + (temp.get(i)).getName() + "\nWith links: ");
+			for (int j = 0; j < links.size(); j++) {
+				System.out.print(links.get(j).getDestination() + "(at position: " + links.get(j).getPosition() + ") , ");
+			}
+			System.out.print("\n");
 		}
 	}
 	
@@ -76,20 +83,110 @@ public class GenericBot extends java.applet.Applet {
 			if (j > 0) {
 				line = XMLcode.substring(i+2, j);
 				newPage.addLine(line);
-				if (line.length() > 2 && line.substring(0, 2).equalsIgnoreCase("{{")) {
-					if (line.indexOf("|") == -1) {
-						if (line.indexOf("}}") == -1) {
-							newPage.addTemplate(line.substring(2));
-						} else {
-							newPage.addTemplate(line.substring(2, line.indexOf("}}")).trim());
-						}
+			}
+		}
+		parsePageForTemplates(newPage);
+		return newPage;
+	}
+	
+	static public void parsePageForTemplates(Page page) {
+		//Just Title
+		ArrayList<String> lines = page.getContent();
+		Position pos;
+		int k;
+		for (int i = 0; lines.size()>i; i++) {
+			for(int p = (lines.get(i)).indexOf("{{"); p != -1; p=(lines.get(i)).indexOf("{{", p+1)){
+				pos = new Position(i, p);
+				if (lines.get(i).indexOf("{{", p) != -1) {
+					if (lines.get(i).indexOf("}}", p) != -1) {
+						//We have a single line template.
+						page.addTemplate(parseTemplate(lines.get(i), p, pos));
 					} else {
-						newPage.addTemplate(line.substring(2, line.indexOf("|")).trim());
+						//We have a multi-line template.
+						k = i;
+						for (int j = -1; j == -1 || lines.size()<=i; i++) {
+							j = lines.get(i).indexOf("}}", p);
+						}
+						if (lines.size()<i){
+							log("ERROR: Unclosed template detected at line " + k + ".");
+						} else {
+							page.addTemplate(parseTemplate(new ArrayList<String>(lines.subList(k, i)), p, pos));
+						}
 					}
 				}
 			}
 		}
-		return newPage;
+	}
+	
+	static Template parseTemplate(ArrayList<String> text, int buffer, Position pos) {
+		//Parse multiple lines for a single template.
+		Template temp;
+		if (text.get(0).indexOf("|", buffer) != -1) {
+			temp = new Template(pos, (text.get(0).substring(text.get(0).indexOf("{{", buffer) + 2, text.get(0).indexOf("|", buffer))));
+		} else {
+			temp = new Template(pos, (text.get(0)).substring(text.get(0).indexOf("{{", buffer) + 2));
+		}
+		temp.setLinks(parseTextForLinks(text, buffer, pos));
+		return temp;
+	}
+	
+	static Template parseTemplate(String text, int buffer, Position pos) {
+		//Parse a single line for a single template.
+		String tempString;
+		Template temp;
+		if (text.indexOf("|", buffer) != -1) {
+			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
+			temp = new Template(pos, tempString);
+			temp.setLinks(parseLineForLinks(text, buffer, pos));
+		} else {
+			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
+			temp = new Template(pos, tempString);
+			temp.setLinks(parseLineForLinks(text, buffer, pos));
+		}
+		return temp;
+	}
+	
+	static ArrayList<Link> parseTextForLinks(ArrayList<String> lines, int buffer, Position pos) {
+		//Parse multiple lines for links.
+		ArrayList<Link> tempLinks = new ArrayList<Link>();
+		ArrayList<Link> tempLinks2 = new ArrayList<Link>();
+		tempLinks2 = parseLineForLinks(lines.get(0), buffer, pos);
+		for (int i = 1; i < lines.size(); i++) {
+			pos.increaseLine(1);
+			tempLinks2 = parseLineForLinks(lines.get(i), 0, pos);
+			if (!tempLinks2.isEmpty()) {
+				tempLinks.addAll(tempLinks2);
+			}
+		}
+		return tempLinks;
+	}
+	
+	static ArrayList<Link> parseLineForLinks(String line, int buffer, Position pos) {
+		//Parse a single line for links.
+		//EXPAND PARSING TO INCLUDE OUT OF WIKI LINKS, AND ALSO EXPAND WIKI LINKS TO INCLUDE ALTERNATE TEXTS
+		ArrayList<Link> tempLinks = new ArrayList<Link>();
+		int i = line.indexOf("[[", buffer);
+		while (i != -1) {
+			int j = line.indexOf("]]", i);
+			if (i != -1 && j == -1) {
+				log("ERROR: Unclosed or multi-line link detected at or below line " + pos.getLine());
+				return null;
+			}
+			
+			if (line.indexOf("|", i) != -1) {
+				tempLinks.add(new Link(new Position(pos.getLine(), i), line.substring(i+2, line.indexOf("|", i))));
+			} else {
+				tempLinks.add(new Link(new Position(pos.getLine(), i), line.substring(i+2, j)));
+			}
+			i = line.indexOf("[[", i+1);
+		}
+		return tempLinks;
+	}
+	
+	static public Page parsePageForCategories(Page page) {
+		//Position, Title, Parameters
+		
+		return page;
 	}
 	
 	static public String parseXMLforInfo (String info, String XMLcode, int bufferBot, int bufferTop) {
@@ -102,21 +199,31 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public String[] getURL(String ur) throws IOException {
 		//This method actual fetches a web page, and turns it into a more easily use-able format.
-        	URL oracle = null;
+        URL oracle = null;
 		try {
 			oracle = new URL(ur);
 		} catch (MalformedURLException e) {
 			System.err.println(e.getMessage());
 		}
-		BufferedReader in = new BufferedReader(
-		new InputStreamReader(oracle.openStream()));
-		
-		ArrayList<String> page = new ArrayList<String>();
-        	String inputLine;
-        	while ((inputLine = in.readLine()) != null) {
-            		page.add(inputLine);
-        	}
-        	in.close();
-        	return page.toArray(new String[page.size()]);
+        BufferedReader in = new BufferedReader(
+        new InputStreamReader(oracle.openStream()));
+
+        ArrayList<String> page = new ArrayList<String>();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+            page.add(inputLine);
+        }
+        in.close();
+        return page.toArray(new String[page.size()]);
+	}
+	
+	public static void log(String line) {
+		log.add(line);
+	}
+	
+	public void printLog() {
+		for (int i = 1; i < log.size(); i++) {
+			System.out.println(log.get(i));
+		}
 	}
 }
