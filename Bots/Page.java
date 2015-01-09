@@ -4,12 +4,15 @@ public class Page {
 	/**
 	 * Page is a custom class designed to store Wiki pages.
 	 * It includes several functions to edit, replace, and view specific article contents.
+	 * 
+	 * Look at this page for links: https://github.com/maxamillion40/WikiBots-in-Java/wiki
 	 */
 	
 	String title;
 	int pageID;
 	ArrayList<String> content = new ArrayList<String>();
-	ArrayList<String> templates = new ArrayList<String>();
+	ArrayList<Template> templates = new ArrayList<Template>();
+	ArrayList<Category> categories;
 	
 	public Page() {
 		//Initialize the page.
@@ -20,6 +23,7 @@ public class Page {
 	}
 	
 	public void setPageID(int PageID_) {
+		//Move to initilaizer!!!!
 		pageID = PageID_;
 	}
 	
@@ -35,15 +39,19 @@ public class Page {
 		}
 	}
 	
-	public void setTemplates(ArrayList<String> templates_) {
+	public void setTemplates(ArrayList<Template> templates_) {
 		templates = templates_;
+	}
+	
+	public void setCategories(ArrayList<Category> categories_) {
+		categories = categories_;
 	}
 	
 	public void addLine(String content_) {
 		content.add(content_);
 	}
 	
-	public void addTemplate(String template) {
+	public void addTemplate(Template template) {
 		templates.add(template);
 	}
 	
@@ -63,7 +71,7 @@ public class Page {
 		return content.get(lineID);
 	}
 	
-	public ArrayList<String> getTemplates() {
+	public ArrayList<Template> getTemplates() {
 		return templates;
 	}
 	
@@ -73,5 +81,33 @@ public class Page {
 	
 	public boolean containsTemplate(String template) {
 		return templates.contains(template);
+	}
+	
+	public boolean templatesContainLink(String link) {
+		for (int i = 0; i < templates.size(); i ++) {
+			if ((templates.get(i)).containsLink(link)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containsCategory(String category) {
+		for (int i = 0; i < categories.size(); i++) {
+			if ((categories.get(i)).containsCategory(category)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Position getLink() {
+		//CODE CODE CODE CODE CODE CODE CODE
+		return null;
+	}
+	
+	public Position getWord() {
+		//CODE CODE CODE CODE CODE CODE CODE
+		return null;
 	}
 }
