@@ -174,7 +174,7 @@ public class GenericBot extends java.applet.Applet {
 				return null;
 			}
 			
-			if (line.indexOf("|", i) != -1) {
+			if (line.indexOf("|", i) != -1 && line.indexOf("|", i) <= j) {
 				tempLinks.add(new Link(new Position(pos.getLine(), i), line.substring(i+2, line.indexOf("|", i))));
 			} else {
 				tempLinks.add(new Link(new Position(pos.getLine(), i), line.substring(i+2, j)));
