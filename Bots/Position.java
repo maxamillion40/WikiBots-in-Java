@@ -16,11 +16,22 @@ public class Position {
 	}
 	
 	public int getPosInLine() {
-		return getPosInLine();
+		return posInLine;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj.getClass().equals(Position.class)) {
+			Position pos2 = (Position)obj;
+			if (pos2.getLine() == getLine() && pos2.getPosInLine() == getPosInLine()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
 	public String toString() {
-		return "line " + line + " and position at letter " + posInLine;
+		return "line " + line + " and letter " + posInLine;
 	}
 }
