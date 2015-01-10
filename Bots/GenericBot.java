@@ -1,5 +1,5 @@
 /**
- *Generic Bot code will go below. Generic Bot is the bot every other bot will be based off of.
+ * Generic Bot is the parent of every other bot.
  */
  
 import java.net.*;
