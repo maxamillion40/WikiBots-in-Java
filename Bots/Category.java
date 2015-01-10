@@ -1,5 +1,3 @@
-package WikiBots;
-
 import java.util.ArrayList;
 
 public class Category {
