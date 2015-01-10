@@ -68,13 +68,10 @@ public class GenericBot extends java.applet.Applet {
 	static public Page parseWikiPage(String XMLcode) {
 		/**
 		 * This is a custom built XML parser for Wiki pages.
-		 * It extracts the title, pageID, page content, and templates used.
+		 * It extracts the title, pageID, page content, links used, templates used, and categories used.
 		 * Note to self: Please test on multiple pages to make sure it works flawlessly.
-		 * Also, if needed, add support for detection of other article features, like links.
 		 **/
-		Page newPage = new Page();
-		newPage.setTitle(parseXMLforInfo("title", XMLcode, 3, 1));
-		newPage.setPageID(Integer.parseInt(parseXMLforInfo("pageid", XMLcode, 2, 0)));
+		Page newPage = new Page(parseXMLforInfo("title", XMLcode, 3, 1), Integer.parseInt(parseXMLforInfo("pageid", XMLcode, 2, 0)));
 		
 		String line = "";
 		int j = 0;
@@ -88,6 +85,14 @@ public class GenericBot extends java.applet.Applet {
 		parsePageForTemplates(newPage);
 		parsePageForLinks(newPage);
 		return newPage;
+	}
+	
+	static public String parseXMLforInfo (String info, String XMLcode, int bufferBot, int bufferTop) {
+		//This method aids in XML parsing.
+		int i = 0;
+		i = XMLcode.indexOf(info);
+		i += info.length() + bufferBot;
+		return XMLcode.substring(i, XMLcode.indexOf(",", i) - bufferTop);
 	}
 	
 	static public void parsePageForTemplates(Page page) {
@@ -212,14 +217,6 @@ public class GenericBot extends java.applet.Applet {
 	static public void parsePageForCategories(Page page) {
 		//Position, Title, Parameters
 		
-	}
-	
-	static public String parseXMLforInfo (String info, String XMLcode, int bufferBot, int bufferTop) {
-		//This method aids in XML parsing.
-		int i = 0;
-		i = XMLcode.indexOf(info);
-		i += info.length() + bufferBot;
-		return XMLcode.substring(i, XMLcode.indexOf(",", i) - bufferTop);
 	}
 	
 	static public String[] getURL(String ur) throws IOException {
