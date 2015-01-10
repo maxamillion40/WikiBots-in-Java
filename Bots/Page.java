@@ -13,21 +13,14 @@ public class Page {
 	ArrayList<String> content = new ArrayList<String>();
 	ArrayList<Link> links = new ArrayList<Link>();
 	ArrayList<Template> templates = new ArrayList<Template>();
-	ArrayList<Category> categories;
+	ArrayList<Category> categories = new ArrayList<Category>();
 	
-	public Page() {
-		//Initialize the page.
-	}
-	
-	public void setTitle(String title_) {
+	public Page(String title_, int pageID_) {
+		// TODO Auto-generated constructor stub
 		title = title_;
+		pageID = pageID_;
 	}
-	
-	public void setPageID(int PageID_) {
-		//Move to initilaizer!!!!
-		pageID = PageID_;
-	}
-	
+
 	public void setContent(ArrayList<String> content_) {
 		content = content_;
 	}
