@@ -45,12 +45,12 @@ public class GenericBot extends java.applet.Applet {
 		ArrayList<Template> temp = webpage.getTemplates();
 		ArrayList<Link> links;
 		for (int i = 0; i < temp.size(); i ++) {
-			links = temp.get(i).getLinks();
-			System.out.print("Template: " + (temp.get(i)).getName() + "\nWith links: ");
-			for (int j = 0; j < links.size(); j++) {
-				System.out.print(links.get(j).getDestination() + "(at position: " + links.get(j).getPosition() + ") , ");
-			}
-			System.out.print("\n");
+			System.out.println(temp.get(i));
+		}
+		
+		links = webpage.getLinks();
+		for (int i = 0; i < links.size(); i ++) {
+			System.out.println(links.get(i));
 		}
 	}
 	
@@ -86,6 +86,7 @@ public class GenericBot extends java.applet.Applet {
 			}
 		}
 		parsePageForTemplates(newPage);
+		parsePageForLinks(newPage);
 		return newPage;
 	}
 	
@@ -183,10 +184,34 @@ public class GenericBot extends java.applet.Applet {
 		return tempLinks;
 	}
 	
-	static public Page parsePageForCategories(Page page) {
+	static public void parsePageForLinks(Page page) {
+		//Position, Link, Link Text
+		ArrayList<String> content = page.getContent();
+		ArrayList<Template> templates = page.getTemplates();
+		ArrayList<Link> links = new ArrayList<Link>();
+		ArrayList<Link> tempLinks;
+		ArrayList<Link> tempLinks2;
+		for (int i = 0; i < content.size(); i++) {
+			tempLinks = parseLineForLinks(content.get(i), 0, new Position(i, 0));
+			for (int j = 0; j < templates.size(); j++) {
+				tempLinks2 = (templates.get(j)).getLinks();
+				for (int k = 0; k < tempLinks2.size(); k++) {
+					if (tempLinks.contains(tempLinks2.get(k))) {
+						System.out.println("True");
+						tempLinks.remove(tempLinks2.get(k));
+					}
+				}
+			}
+			if (!tempLinks.isEmpty()) {
+				links.addAll(tempLinks);
+			}
+		}
+		page.setLinks(links);
+	}
+	
+	static public void parsePageForCategories(Page page) {
 		//Position, Title, Parameters
 		
-		return page;
 	}
 	
 	static public String parseXMLforInfo (String info, String XMLcode, int bufferBot, int bufferTop) {
