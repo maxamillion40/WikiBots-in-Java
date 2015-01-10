@@ -30,4 +30,20 @@ public class Link {
 	public String getLinkText() {
 		return linkText;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj.getClass().equals(Link.class)) {
+			Link link2 = (Link)obj;
+			if (link2.getPosition().equals(getPosition())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return "(Link) Text: " + link + " Link Text: " + linkText + "(Position: " + position + ")";
+	}
 }
