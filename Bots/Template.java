@@ -41,4 +41,15 @@ public class Template {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		String output;
+
+		output = "(Template) Name: " + name + "\nWith links: ";
+		for (int i = 0; i < links.size(); i++) {
+			output += (links.get(i) + " , ");
+		}
+		return output;
+	}
 }
