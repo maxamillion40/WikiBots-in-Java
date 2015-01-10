@@ -11,6 +11,7 @@ public class Page {
 	String title;
 	int pageID;
 	ArrayList<String> content = new ArrayList<String>();
+	ArrayList<Link> links = new ArrayList<Link>();
 	ArrayList<Template> templates = new ArrayList<Template>();
 	ArrayList<Category> categories;
 	
@@ -29,6 +30,10 @@ public class Page {
 	
 	public void setContent(ArrayList<String> content_) {
 		content = content_;
+	}
+	
+	public void setLinks(ArrayList<Link> links_) {
+		links = links_;
 	}
 	
 	public void setContentLine(String content_, int lineID) {
@@ -73,6 +78,10 @@ public class Page {
 	
 	public ArrayList<Template> getTemplates() {
 		return templates;
+	}
+	
+	public ArrayList<Link> getLinks() {
+		return links;
 	}
 	
 	public int getLineCount() {
