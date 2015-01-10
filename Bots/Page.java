@@ -16,7 +16,6 @@ public class Page {
 	ArrayList<Category> categories = new ArrayList<Category>();
 	
 	public Page(String title_, int pageID_) {
-		// TODO Auto-generated constructor stub
 		title = title_;
 		pageID = pageID_;
 	}
