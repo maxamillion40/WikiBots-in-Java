@@ -38,6 +38,7 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
+		System.out.println("http://www.google.com".substring(0,7));
 		for (int i = 0; i < webpage.getLineCount(); i++) {
 			System.out.println(webpage.getContentLine(i));
 		}
@@ -79,6 +80,9 @@ public class GenericBot extends java.applet.Applet {
 			j = XMLcode.indexOf("\\n", i+1);
 			if (j > 0) {
 				line = XMLcode.substring(i+2, j);
+				newPage.addLine(line);
+			} else {
+				line = XMLcode.substring(i+2, XMLcode.indexOf("\"}]"));
 				newPage.addLine(line);
 			}
 		}
@@ -172,19 +176,50 @@ public class GenericBot extends java.applet.Applet {
 		//EXPAND PARSING TO INCLUDE OUT OF WIKI LINKS, AND ALSO EXPAND WIKI LINKS TO INCLUDE ALTERNATE TEXTS
 		ArrayList<Link> tempLinks = new ArrayList<Link>();
 		int i = line.indexOf("[[", buffer);
-		while (i != -1) {
-			int j = line.indexOf("]]", i);
-			if (i != -1 && j == -1) {
-				log("ERROR: Unclosed or multi-line link detected at or below line " + pos.getLine());
-				return null;
-			}
-			
-			if (line.indexOf("|", i) != -1 && line.indexOf("|", i) <= j) {
-				tempLinks.add(new Link(new Position(pos.getLine(), i), line.substring(i+2, line.indexOf("|", i))));
+		int j = -1;
+		int k = line.indexOf("[", buffer);
+		String text;
+		while (i != -1 || k != -1) {
+			if (i <= k && i != -1) {
+				//We have a Wikilink, image, or category.
+				j = line.indexOf("]]", i);
+				if (i != -1 && j == -1) {
+					log("ERROR: Unclosed or multi-line link/image/category detected at " + new Position(pos.getLine(), i));
+					return null;
+				}
+				
+				if (line.indexOf("|", i) != -1 && line.indexOf("|", i) <= j) {
+					text = line.substring(i+2, line.indexOf("|", i));
+					tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+				} else {
+					text = line.substring(i+2, j);
+					tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+				}
+				//Iteration!
+				k = i;	
+				i = line.indexOf("[[", i+1);
+				k = line.indexOf("[", k + 1);
 			} else {
-				tempLinks.add(new Link(new Position(pos.getLine(), i), line.substring(i+2, j)));
+				//We might have an external link. Must check.
+				j = line.indexOf("]", k);
+				if (line.indexOf("|", k) != -1 && line.indexOf("|", k) <= j) {
+					text = line.substring(k+1, line.indexOf("|", k));
+				} else {
+					text = line.substring(k+1, j);
+				}
+				
+				if (text.length() > 8) {
+					if (text.substring(0, 7).equals("http://")) {
+						tempLinks.add(new Link(new Position(pos.getLine(), k), text));
+					}
+				}
+				//Iteration!
+				if (i != -1) {
+					i = line.indexOf("[[", k+1);
+				}
+				k = line.indexOf("[", k+1);
+
 			}
-			i = line.indexOf("[[", i+1);
 		}
 		return tempLinks;
 	}
@@ -202,7 +237,6 @@ public class GenericBot extends java.applet.Applet {
 				tempLinks2 = (templates.get(j)).getLinks();
 				for (int k = 0; k < tempLinks2.size(); k++) {
 					if (tempLinks.contains(tempLinks2.get(k))) {
-						System.out.println("True");
 						tempLinks.remove(tempLinks2.get(k));
 					}
 				}
