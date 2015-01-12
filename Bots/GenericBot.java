@@ -5,6 +5,7 @@
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList; 
+import java.util.Arrays;
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -18,6 +19,7 @@ public class GenericBot extends java.applet.Applet {
 	private static final long serialVersionUID = 1L;
 	static Page webpage;
 	static ArrayList<String> log = new ArrayList<String>();
+	static ArrayList<String> Interwiki = new ArrayList<String>(Arrays.asList("de:", "id:", "ru:"));
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -38,7 +40,8 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		System.out.println("http://www.google.com".substring(0,7));
+		System.out.println("File:Cats".substring(0,5));
+		System.out.println("Category:Cats".substring(0,9));
 		for (int i = 0; i < webpage.getLineCount(); i++) {
 			System.out.println(webpage.getContentLine(i));
 		}
@@ -189,11 +192,24 @@ public class GenericBot extends java.applet.Applet {
 				}
 				
 				if (line.indexOf("|", i) != -1 && line.indexOf("|", i) <= j) {
-					text = line.substring(i+2, line.indexOf("|", i));
-					tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+					text = line.substring(i+2, line.indexOf("|", i));	
 				} else {
 					text = line.substring(i+2, j);
-					tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+				}
+				if (!(text.length() > 5 && text.substring(0,5).equals("File:")) && !(text.length() > 9 && text.substring(0,9).equals("Category:"))) {
+					//We know we don't have a file or a category. Now to check we don't have an interwiki link.
+					boolean temp = true;
+					String temp2;
+					for (int l = 0; l < Interwiki.size(); l++) {
+						temp2 = Interwiki.get(l);
+						if (text.length() > temp2.length() && text.substring(0,temp2.length()).equals(temp2)) {
+							//We weed out interwiki links, checking against interwiki prefixes one at a time.
+							temp = false;
+						}
+					}
+					if (temp) {
+						tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+					}
 				}
 				//Iteration!
 				k = i;	
