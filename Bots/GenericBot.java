@@ -1,3 +1,4 @@
+//Watch Swing tutorial on java website.
 /**
  * Generic Bot is the parent of every other bot.
  */
@@ -20,6 +21,7 @@ public class GenericBot extends java.applet.Applet {
 	static Page webpage;
 	static ArrayList<String> log = new ArrayList<String>();
 	static ArrayList<String> Interwiki = new ArrayList<String>(Arrays.asList("de:", "id:", "ru:"));
+	static String articleName = "";
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -39,9 +41,9 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
+		String test = "Category:Cats";
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		System.out.println("File:Cats".substring(0,5));
-		System.out.println("Category:Cats".substring(0,9));
+		System.out.println(test.substring(1, test.length()-1));
 		for (int i = 0; i < webpage.getLineCount(); i++) {
 			System.out.println(webpage.getContentLine(i));
 		}
@@ -76,6 +78,7 @@ public class GenericBot extends java.applet.Applet {
 		 * Note to self: Please test on multiple pages to make sure it works flawlessly.
 		 **/
 		Page newPage = new Page(parseXMLforInfo("title", XMLcode, 3, 1), Integer.parseInt(parseXMLforInfo("pageid", XMLcode, 2, 0)));
+		articleName = newPage.getTitle();
 		
 		String line = "";
 		int j = 0;
@@ -176,12 +179,13 @@ public class GenericBot extends java.applet.Applet {
 	
 	static ArrayList<Link> parseLineForLinks(String line, int buffer, Position pos) {
 		//Parse a single line for links.
-		//EXPAND PARSING TO INCLUDE OUT OF WIKI LINKS, AND ALSO EXPAND WIKI LINKS TO INCLUDE ALTERNATE TEXTS
+		//EXPAND PARSING TO INCLUDE ALTERNATE TEXTS
 		ArrayList<Link> tempLinks = new ArrayList<Link>();
 		int i = line.indexOf("[[", buffer);
 		int j = -1;
 		int k = line.indexOf("[", buffer);
 		String text;
+		String linkText = null;
 		while (i != -1 || k != -1) {
 			if (i <= k && i != -1) {
 				//We have a Wikilink, image, or category.
@@ -208,7 +212,33 @@ public class GenericBot extends java.applet.Applet {
 						}
 					}
 					if (temp) {
-						tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+						if (text.substring(0,2).equals("/")) {
+							//This link is headed to a subpage and the destination must reflect that.
+							text = articleName + text;
+							if (text.substring(text.length()-1).equals("/")) {
+								linkText = text.substring(1, text.length()-1);
+							}
+						} else if (text.substring(0,2).equals(":")) {
+							//Category and or file link.
+							text = text.substring(1);
+						}
+						if (line.indexOf("|", i) < line.indexOf("]]", i) && line.indexOf("|", i) != -1) {
+							//Parse for link text, the text a user actually sees.
+							//Account for [[Scratch Wiki talk:Community Portal|]] = Community Portal
+							linkText = line.substring(line.indexOf("|", i)+1, line.indexOf("]]", i));
+							if (linkText.equals("")) {
+								if (text.indexOf(":") == -1) {
+									log("ERROR: Link with no displayed text detected at " + pos + ".");
+								} else {
+									linkText = text.substring(text.indexOf(":"));
+								}
+							}
+						}
+						if (linkText == null) {
+							tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+						} else {
+							tempLinks.add(new Link(new Position(pos.getLine(), i), text, linkText));
+						}
 					}
 				}
 				//Iteration!
