@@ -58,6 +58,9 @@ public class GenericBot extends java.applet.Applet {
 		for (int i = 0; i < links.size(); i ++) {
 			System.out.println(links.get(i));
 		}
+		
+		System.out.println("Log:");
+		printLog();
 	}
 	
 	static public Page getWikiPage(String name) {
@@ -191,10 +194,13 @@ public class GenericBot extends java.applet.Applet {
 				//We have a Wikilink, image, or category.
 				j = line.indexOf("]]", i);
 				if (i != -1 && j == -1) {
-					log("ERROR: Unclosed or multi-line link/image/category detected at " + new Position(pos.getLine(), i));
+					log("ERROR: Unclosed or multi-line link/image/category detected at " + new Position(pos.getLine(), i) + ".");
 					return null;
 				}
 				
+				if (line.indexOf("||", i) != -1 && line.indexOf("||", i) < j) {
+					log("ERROR: Double pipes detected in link/image/category at " + new Position(pos.getLine(), i) + ".");
+				}
 				if (line.indexOf("|", i) != -1 && line.indexOf("|", i) <= j) {
 					text = line.substring(i+2, line.indexOf("|", i));	
 				} else {
@@ -228,7 +234,7 @@ public class GenericBot extends java.applet.Applet {
 							linkText = line.substring(line.indexOf("|", i)+1, line.indexOf("]]", i));
 							if (linkText.equals("")) {
 								if (text.indexOf(":") == -1) {
-									log("ERROR: Link with no displayed text detected at " + pos + ".");
+									log("ERROR: Link with no displayed text detected at " + new Position(pos.getLine(), i) + ".");
 								} else {
 									linkText = text.substring(text.indexOf(":"));
 								}
@@ -279,16 +285,18 @@ public class GenericBot extends java.applet.Applet {
 		ArrayList<Link> tempLinks2;
 		for (int i = 0; i < content.size(); i++) {
 			tempLinks = parseLineForLinks(content.get(i), 0, new Position(i, 0));
-			for (int j = 0; j < templates.size(); j++) {
-				tempLinks2 = (templates.get(j)).getLinks();
-				for (int k = 0; k < tempLinks2.size(); k++) {
-					if (tempLinks.contains(tempLinks2.get(k))) {
-						tempLinks.remove(tempLinks2.get(k));
+			if (tempLinks != null) {
+					for (int j = 0; j < templates.size(); j++) {
+					tempLinks2 = (templates.get(j)).getLinks();
+					for (int k = 0; k < tempLinks2.size(); k++) {
+						if (tempLinks.contains(tempLinks2.get(k))) {
+							tempLinks.remove(tempLinks2.get(k));
+						}
 					}
 				}
-			}
-			if (!tempLinks.isEmpty()) {
-				links.addAll(tempLinks);
+				if (!tempLinks.isEmpty()) {
+					links.addAll(tempLinks);
+				}
 			}
 		}
 		page.setLinks(links);
@@ -323,8 +331,8 @@ public class GenericBot extends java.applet.Applet {
 		log.add(line);
 	}
 	
-	public void printLog() {
-		for (int i = 1; i < log.size(); i++) {
+	public static void printLog() {
+		for (int i = 0; i < log.size(); i++) {
 			System.out.println(log.get(i));
 		}
 	}
