@@ -44,6 +44,6 @@ public class Link {
 	
 	@Override
 	public String toString() {
-		return "(Link) Text: " + link + " Link Text: " + linkText + "(Position: " + position + ")";
+		return "(Link) Text: " + link + " Link Text: " + linkText + " (Position: " + position + ")";
 	}
 }
