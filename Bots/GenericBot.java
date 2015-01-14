@@ -20,6 +20,7 @@ public class GenericBot extends java.applet.Applet {
 	static Page webpage;
 	static ArrayList<String> log = new ArrayList<String>();
 	static ArrayList<String> Interwiki = new ArrayList<String>(Arrays.asList("de:", "id:", "ru:"));
+	static ArrayList<String> MagicWords = new ArrayList<String>();
 	static String articleName = "";
 	static final int maxI = Integer.MAX_VALUE;
 	
@@ -109,6 +110,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void parsePageForTemplates(Page page) {
 		//Just Title
+		Template temp;
 		ArrayList<String> lines = page.getContent();
 		Position pos;
 		int k;
@@ -118,7 +120,10 @@ public class GenericBot extends java.applet.Applet {
 				if (lines.get(i).indexOf("{{", p) != -1) {
 					if (lines.get(i).indexOf("}}", p) != -1) {
 						//We have a single line template.
-						page.addTemplate(parseTemplate(lines.get(i), p, pos));
+						temp = parseTemplate(lines.get(i), p, pos);
+						if (temp != null) {
+							page.addTemplate(temp);
+						}
 					} else {
 						//We have a multi-line template.
 						k = i;
@@ -151,16 +156,20 @@ public class GenericBot extends java.applet.Applet {
 	
 	static Template parseTemplate(String text, int buffer, Position pos) {
 		//Parse a single line for a single template.
-		String tempString;
+		String title;
 		Template temp;
 		if (text.indexOf("|", buffer) != -1) {
-			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
-			temp = new Template(pos, tempString);
+			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
+			temp = new Template(pos, title);
 			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
 		} else {
-			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
-			temp = new Template(pos, tempString);
-			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
+			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
+			if (MagicWords.contains(title)) {
+				return null;
+			} else {
+				temp = new Template(pos, title);
+				parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
+			}
 		}
 		return temp;
 	}
@@ -180,8 +189,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	static void parseLineForLinksImagesCategories(Page page, Template templ, String line, int buffer, int topBuffer, Position pos, boolean pageNotTemp) {
 		//Parse a single line for links.
-		//EXPAND PARSING TO IGNORE LINKS IN IMAGE DESCRIPTIONS
-		//SPLIT INTO IMAGE PARSING, LINK PARSING, and CATEGORY PARSING
+		//ADD IN IMAGE AND CATEGORY PARSING
 		int i = line.indexOf("[[", buffer);
 		int j = -1;
 		int k = line.indexOf("[", buffer);
