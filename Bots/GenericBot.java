@@ -1,4 +1,3 @@
-//Watch Swing tutorial on java website.
 /**
  * Generic Bot is the parent of every other bot.
  */
@@ -139,13 +138,14 @@ public class GenericBot extends java.applet.Applet {
 	
 	static Template parseTemplate(ArrayList<String> text, int buffer, Position pos) {
 		//Parse multiple lines for a single template.
+		//Notification: MUST PARSE FOR TEMPLATE PARAMETERS
 		Template temp;
 		if (text.get(0).indexOf("|", buffer) != -1) {
 			temp = new Template(pos, (text.get(0).substring(text.get(0).indexOf("{{", buffer) + 2, text.get(0).indexOf("|", buffer))));
 		} else {
 			temp = new Template(pos, (text.get(0)).substring(text.get(0).indexOf("{{", buffer) + 2));
 		}
-		temp.setLinks(parseTextForLinks(text, buffer, pos));
+		parseTemplateTextForLinks(temp, text, buffer, pos);
 		return temp;
 	}
 	
@@ -156,46 +156,39 @@ public class GenericBot extends java.applet.Applet {
 		if (text.indexOf("|", buffer) != -1) {
 			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
 			temp = new Template(pos, tempString);
-			temp.setLinks(parseLineForLinks(text, buffer, pos));
+			parseLineForLinksImagesCategories(null, temp, text, buffer, pos, false);
 		} else {
 			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
 			temp = new Template(pos, tempString);
-			temp.setLinks(parseLineForLinks(text, buffer, pos));
+			parseLineForLinksImagesCategories(null, temp, text, buffer, pos, false);
 		}
 		return temp;
 	}
 	
-	static ArrayList<Link> parseTextForLinks(ArrayList<String> lines, int buffer, Position pos) {
+	static void parseTemplateTextForLinks(Template temp, ArrayList<String> lines, int buffer, Position pos) {
 		//Parse multiple lines for links.
-		ArrayList<Link> tempLinks = new ArrayList<Link>();
-		ArrayList<Link> tempLinks2 = new ArrayList<Link>();
-		tempLinks2 = parseLineForLinks(lines.get(0), buffer, pos);
+		parseLineForLinksImagesCategories(null, temp, lines.get(0), buffer, pos, false);
 		for (int i = 1; i < lines.size(); i++) {
 			pos.increaseLine(1);
-			tempLinks2 = parseLineForLinks(lines.get(i), 0, pos);
-			if (!tempLinks2.isEmpty()) {
-				tempLinks.addAll(tempLinks2);
-			}
+			parseLineForLinksImagesCategories(null, temp, lines.get(i), 0, pos, false);
 		}
-		return tempLinks;
 	}
 	
-	static ArrayList<Link> parseLineForLinks(String line, int buffer, Position pos) {
+	static void parseLineForLinksImagesCategories(Page page, Template templ, String line, int buffer, Position pos, boolean pageNotTemp) {
 		//Parse a single line for links.
-		//EXPAND PARSING TO INCLUDE ALTERNATE TEXTS
-		ArrayList<Link> tempLinks = new ArrayList<Link>();
+		//EXPAND PARSING TO IGNORE LINKS IN IMAGE DESCRIPTIONS
+		//SPLIT INTO IMAGE PARSING, LINK PARSING, and CATEGORY PARSING
 		int i = line.indexOf("[[", buffer);
 		int j = -1;
 		int k = line.indexOf("[", buffer);
 		String text;
-		String linkText = null;
 		while (i != -1 || k != -1) {
 			if (i <= k && i != -1) {
 				//We have a Wikilink, image, or category.
 				j = line.indexOf("]]", i);
 				if (i != -1 && j == -1) {
 					log("ERROR: Unclosed or multi-line link/image/category detected at " + new Position(pos.getLine(), i) + ".");
-					return null;
+					return;
 				}
 				
 				if (line.indexOf("||", i) != -1 && line.indexOf("||", i) < j) {
@@ -206,65 +199,61 @@ public class GenericBot extends java.applet.Applet {
 				} else {
 					text = line.substring(i+2, j);
 				}
-				if (!(text.length() > 5 && text.substring(0,5).equals("File:")) && !(text.length() > 9 && text.substring(0,9).equals("Category:"))) {
-					//We know we don't have a file or a category. Now to check we don't have an interwiki link.
-					boolean temp = true;
-					String temp2;
-					for (int l = 0; l < Interwiki.size(); l++) {
-						temp2 = Interwiki.get(l);
-						if (text.length() > temp2.length() && text.substring(0,temp2.length()).equals(temp2)) {
-							//We weed out interwiki links, checking against interwiki prefixes one at a time.
-							temp = false;
-						}
-					}
-					if (temp) {
-						if (text.substring(0,2).equals("/")) {
-							//This link is headed to a subpage and the destination must reflect that.
-							text = articleName + text;
-							if (text.substring(text.length()-1).equals("/")) {
-								linkText = text.substring(1, text.length()-1);
-							}
-						} else if (text.substring(0,2).equals(":")) {
-							//Category and or file link.
-							text = text.substring(1);
-						}
-						if (line.indexOf("|", i) < line.indexOf("]]", i) && line.indexOf("|", i) != -1) {
-							//Parse for link text, the text a user actually sees.
-							//Account for [[Scratch Wiki talk:Community Portal|]] = Community Portal
-							linkText = line.substring(line.indexOf("|", i)+1, line.indexOf("]]", i));
-							if (linkText.equals("")) {
-								if (text.indexOf(":") == -1) {
-									log("ERROR: Link with no displayed text detected at " + new Position(pos.getLine(), i) + ".");
-								} else {
-									linkText = text.substring(text.indexOf(":"));
-								}
-							}
-						}
-						if (linkText == null) {
-							tempLinks.add(new Link(new Position(pos.getLine(), i), text));
+				if (!(text.length() > 9 && text.substring(0,9).equals("Category:"))) {
+					if (!(text.length() > 5 && text.substring(0,5).equals("File:"))) {
+						//We have a link!
+						Link link = parseLink(page, line, text, i, pos, pageNotTemp);
+						if (pageNotTemp) {
+							page.addLink(link);
 						} else {
-							tempLinks.add(new Link(new Position(pos.getLine(), i), text, linkText));
+							templ.addLink(link);
+						}
+					} else {
+						//We have an image!
+						int m = 1;
+						k = i;
+						i = line.indexOf("[[", i+1);
+						j = line.indexOf("]]", k+1);
+						if (i > j || i == -1) {
+							i = k;
+						} else {
+							do {
+								if (i<j && i != -1) {
+									if (i != -1) {
+										k = i;
+										i = line.indexOf("[[", i+1);
+										j = line.indexOf("]]", k+1);
+									}
+									m++;
+								} else {
+									if (i != -1) {
+										i = line.indexOf("[[", j+1);
+									}
+									j = line.indexOf("]]", j+1);
+									m--;
+								}
+							} while (m != 0);
+							i = k;
 						}
 					}
+				} else {
+					//We have a category!
 				}
 				//Iteration!
 				k = i;	
 				i = line.indexOf("[[", i+1);
-				k = line.indexOf("[", k + 1);
+				k = line.indexOf("[", k+1);
 			} else {
 				//We might have an external link. Must check.
-				j = line.indexOf("]", k);
-				if (line.indexOf("|", k) != -1 && line.indexOf("|", k) <= j) {
-					text = line.substring(k+1, line.indexOf("|", k));
-				} else {
-					text = line.substring(k+1, j);
-				}
-				
-				if (text.length() > 8) {
-					if (text.substring(0, 7).equals("http://")) {
-						tempLinks.add(new Link(new Position(pos.getLine(), k), text));
+				Link link = parseExternalLink(line, k, j, pos);
+				if (link != null) {
+					if (pageNotTemp) {
+						page.addLink(link);
+					} else {
+						templ.addLink(link);
 					}
 				}
+				
 				//Iteration!
 				if (i != -1) {
 					i = line.indexOf("[[", k+1);
@@ -273,33 +262,89 @@ public class GenericBot extends java.applet.Applet {
 
 			}
 		}
-		return tempLinks;
+	}
+	
+	static public Link parseLink(Page page, String line, String text, int i, Position pos, boolean PageNotTemp) {
+		//We know we don't have a file or a category. Now to check we don't have an interwiki link.
+		String linkText = null;
+		boolean temp = true;
+		String temp2;
+		for (int l = 0; l < Interwiki.size(); l++) {
+			temp2 = Interwiki.get(l);
+			if (text.length() > temp2.length() && text.substring(0,temp2.length()).equals(temp2)) {
+				//We weed out interwiki links, checking against interwiki prefixes one at a time.
+				temp = false;
+			}
+		}
+		if (temp) {
+			if (text.substring(0,2).equals("/")) {
+				//This link is headed to a subpage and the destination must reflect that.
+				text = articleName + text;
+				if (text.substring(text.length()-1).equals("/")) {
+					linkText = text.substring(1, text.length()-1);
+				}
+			} else if (text.substring(0,2).equals(":")) {
+				//Category and or file link.
+				text = text.substring(1);
+			}
+			if (line.indexOf("|", i) < line.indexOf("]]", i) && line.indexOf("|", i) != -1) {
+				//Parse for link text, the text a user actually sees.
+				//Account for [[Scratch Wiki talk:Community Portal|]] = Community Portal
+				linkText = line.substring(line.indexOf("|", i)+1, line.indexOf("]]", i));
+				if (linkText.equals("")) {
+					if (text.indexOf(":") == -1) {
+						log("ERROR: Link with no displayed text detected at " + new Position(pos.getLine(), i) + ".");
+					} else {
+						linkText = text.substring(text.indexOf(":"));
+					}
+				}
+			}
+			Link link_;
+			if (PageNotTemp) {
+				if (linkText == null) {
+					link_ = new Link(new Position(pos.getLine(), i), text);
+				} else {
+					link_ = new Link(new Position(pos.getLine(), i), text, linkText);
+				}
+				if (page.templatesContainLink(link_)) {
+					return null;
+				}
+			} else {
+				if (linkText == null) {
+					link_ = new Link(new Position(pos.getLine(), i), text);
+				} else {
+					link_ = new Link(new Position(pos.getLine(), i), text, linkText);
+				}
+			}
+			return link_;
+		}
+		return null;
+	}
+	
+	static public Link parseExternalLink(String line, int k, int j, Position pos) {
+		//We have an external link!
+		String text;
+		j = line.indexOf("]", k);
+		if (line.indexOf("|", k) != -1 && line.indexOf("|", k) <= j) {
+			text = line.substring(k+1, line.indexOf("|", k));
+		} else {
+			text = line.substring(k+1, j);
+		}
+		
+		if (text.length() > 8) {
+			if (text.substring(0, 7).equals("http://")) {
+				return new Link(new Position(pos.getLine(), k), text);
+			}
+		}
+		return null;
 	}
 	
 	static public void parsePageForLinks(Page page) {
 		//Position, Link, Link Text
 		ArrayList<String> content = page.getContent();
-		ArrayList<Template> templates = page.getTemplates();
-		ArrayList<Link> links = new ArrayList<Link>();
-		ArrayList<Link> tempLinks;
-		ArrayList<Link> tempLinks2;
 		for (int i = 0; i < content.size(); i++) {
-			tempLinks = parseLineForLinks(content.get(i), 0, new Position(i, 0));
-			if (tempLinks != null) {
-					for (int j = 0; j < templates.size(); j++) {
-					tempLinks2 = (templates.get(j)).getLinks();
-					for (int k = 0; k < tempLinks2.size(); k++) {
-						if (tempLinks.contains(tempLinks2.get(k))) {
-							tempLinks.remove(tempLinks2.get(k));
-						}
-					}
-				}
-				if (!tempLinks.isEmpty()) {
-					links.addAll(tempLinks);
-				}
-			}
+			parseLineForLinksImagesCategories(page, null, content.get(i), 0, new Position(i, 0), true);
 		}
-		page.setLinks(links);
 	}
 	
 	static public void parsePageForCategories(Page page) {
