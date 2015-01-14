@@ -15,6 +15,10 @@ public class Link {
 		linkText = link_;
 	}
 	
+	public void setPosition(Position pos) {
+		position = pos;
+	}
+	
 	public void setLinkText(String text) {
 		linkText = text;
 	}
@@ -33,6 +37,9 @@ public class Link {
 	
 	@Override
 	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
 		if (obj.getClass().equals(Link.class)) {
 			Link link2 = (Link)obj;
 			if (link2.getPosition().equals(getPosition())) {
