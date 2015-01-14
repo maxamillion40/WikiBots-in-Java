@@ -21,6 +21,7 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> log = new ArrayList<String>();
 	static ArrayList<String> Interwiki = new ArrayList<String>(Arrays.asList("de:", "id:", "ru:"));
 	static String articleName = "";
+	static final int maxI = Integer.MAX_VALUE;
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -58,7 +59,6 @@ public class GenericBot extends java.applet.Applet {
 			System.out.println(links.get(i));
 		}
 		
-		System.out.println("Log:");
 		printLog();
 	}
 	
@@ -156,25 +156,29 @@ public class GenericBot extends java.applet.Applet {
 		if (text.indexOf("|", buffer) != -1) {
 			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
 			temp = new Template(pos, tempString);
-			parseLineForLinksImagesCategories(null, temp, text, buffer, pos, false);
+			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
 		} else {
 			tempString = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
 			temp = new Template(pos, tempString);
-			parseLineForLinksImagesCategories(null, temp, text, buffer, pos, false);
+			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
 		}
 		return temp;
 	}
 	
 	static void parseTemplateTextForLinks(Template temp, ArrayList<String> lines, int buffer, Position pos) {
 		//Parse multiple lines for links.
-		parseLineForLinksImagesCategories(null, temp, lines.get(0), buffer, pos, false);
+		parseLineForLinksImagesCategories(null, temp, lines.get(0), buffer, maxI, pos, false);
 		for (int i = 1; i < lines.size(); i++) {
 			pos.increaseLine(1);
-			parseLineForLinksImagesCategories(null, temp, lines.get(i), 0, pos, false);
+			if (i+1 < lines.size()) {
+				parseLineForLinksImagesCategories(null, temp, lines.get(i), buffer, maxI, pos, false);
+			} else {
+				parseLineForLinksImagesCategories(null, temp, lines.get(i), buffer, (lines.get(i).indexOf("}}")), pos, false);
+			}
 		}
 	}
 	
-	static void parseLineForLinksImagesCategories(Page page, Template templ, String line, int buffer, Position pos, boolean pageNotTemp) {
+	static void parseLineForLinksImagesCategories(Page page, Template templ, String line, int buffer, int topBuffer, Position pos, boolean pageNotTemp) {
 		//Parse a single line for links.
 		//EXPAND PARSING TO IGNORE LINKS IN IMAGE DESCRIPTIONS
 		//SPLIT INTO IMAGE PARSING, LINK PARSING, and CATEGORY PARSING
@@ -182,7 +186,7 @@ public class GenericBot extends java.applet.Applet {
 		int j = -1;
 		int k = line.indexOf("[", buffer);
 		String text;
-		while (i != -1 || k != -1) {
+		while ((i != -1 || k != -1) && (i<topBuffer || k<topBuffer)) {
 			if (i <= k && i != -1) {
 				//We have a Wikilink, image, or category.
 				j = line.indexOf("]]", i);
@@ -203,10 +207,12 @@ public class GenericBot extends java.applet.Applet {
 					if (!(text.length() > 5 && text.substring(0,5).equals("File:"))) {
 						//We have a link!
 						Link link = parseLink(page, line, text, i, pos, pageNotTemp);
-						if (pageNotTemp) {
-							page.addLink(link);
-						} else {
-							templ.addLink(link);
+						if (link != null) {
+							if (pageNotTemp) {
+								page.addLink(link);
+							} else {
+								templ.addLink(link);
+							}
 						}
 					} else {
 						//We have an image!
@@ -241,11 +247,11 @@ public class GenericBot extends java.applet.Applet {
 				}
 				//Iteration!
 				k = i;	
-				i = line.indexOf("[[", i+1);
+				i = line.indexOf("[[", k+1);
 				k = line.indexOf("[", k+1);
 			} else {
 				//We might have an external link. Must check.
-				Link link = parseExternalLink(line, k, j, pos);
+				Link link = parseExternalLink(page, line, k, j, pos);
 				if (link != null) {
 					if (pageNotTemp) {
 						page.addLink(link);
@@ -321,7 +327,7 @@ public class GenericBot extends java.applet.Applet {
 		return null;
 	}
 	
-	static public Link parseExternalLink(String line, int k, int j, Position pos) {
+	static public Link parseExternalLink(Page page, String line, int k, int j, Position pos) {
 		//We have an external link!
 		String text;
 		j = line.indexOf("]", k);
@@ -333,7 +339,10 @@ public class GenericBot extends java.applet.Applet {
 		
 		if (text.length() > 8) {
 			if (text.substring(0, 7).equals("http://")) {
-				return new Link(new Position(pos.getLine(), k), text);
+				Link link_ = new Link(new Position(pos.getLine(), k), text);
+				if (page.templatesContainLink(link_)) {
+					return link_;
+				}
 			}
 		}
 		return null;
@@ -343,7 +352,7 @@ public class GenericBot extends java.applet.Applet {
 		//Position, Link, Link Text
 		ArrayList<String> content = page.getContent();
 		for (int i = 0; i < content.size(); i++) {
-			parseLineForLinksImagesCategories(page, null, content.get(i), 0, new Position(i, 0), true);
+			parseLineForLinksImagesCategories(page, null, content.get(i), 0, maxI, new Position(i, 0), true);
 		}
 	}
 	
@@ -377,6 +386,7 @@ public class GenericBot extends java.applet.Applet {
 	}
 	
 	public static void printLog() {
+		System.out.println("Log:");
 		for (int i = 0; i < log.size(); i++) {
 			System.out.println(log.get(i));
 		}
