@@ -102,7 +102,7 @@ public class GenericBot extends java.applet.Applet {
 			for(int p = (lines.get(i)).indexOf("{{"); p != -1; p=(lines.get(i)).indexOf("{{", p+1)) {
 				pos = new Position(i, p);
 				if (lines.get(i).indexOf("{{", p) != -1) {
-					end = findClosingIndex(page, "{{", "}}", new Position(i, lines.get(i).indexOf("{{", p)));
+					end = findClosingPosition(page, "{{", "}}", new Position(i, lines.get(i).indexOf("{{", p)));
 					if (end != null) {
 						if (end.getLine() == i) {
 							//We have a single line template.
@@ -180,7 +180,7 @@ public class GenericBot extends java.applet.Applet {
 				q = line.indexOf("[[", k);
 				while (q < j && q != -1) {
 					if (q < j && q != -1) {
-						q = findClosingIndex(page, "[[", "]]", new Position(pos.getLine() + i, q)).getPosInLine();
+						q = findClosingPosition(page, "[[", "]]", new Position(pos.getLine() + i, q)).getPosInLine();
 						j = line.indexOf("|", q);
 					}
 					q = line.indexOf("[[", q);
@@ -260,7 +260,7 @@ public class GenericBot extends java.applet.Applet {
 						if (i > j || i == -1) {
 							i = k;
 						} else {
-							i = findClosingIndex(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
+							i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
 						}
 					}
 				} else {
@@ -382,7 +382,7 @@ public class GenericBot extends java.applet.Applet {
 		
 	}
 	
-	static public Position findClosingIndex(Page page, String open, String close, Position start) {
+	static public Position findClosingPosition(Page page, String open, String close, Position start) {
 		//Method for finding where [[ ]] and {{ }} end.
 		int m = 1;
 		int l = start.getLine();
