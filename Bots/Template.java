@@ -20,12 +20,16 @@ public class Template {
 		name = name_;
 	}
 	
-	public void addLink(Link link) {
-		links.add(link);
+	public void addParameter(String param) {
+		parameters.add(param);
 	}
 	
 	public void addImage(Image image) {
 		images.add(image);
+	}
+	
+	public void addLink(Link link) {
+		links.add(link);
 	}
 	
 	public void setLinks(ArrayList<Link> links_) {
@@ -80,6 +84,14 @@ public class Template {
 		output = "(Template) Name: " + name + "\nWith links: ";
 		for (int i = 0; i < links.size(); i++) {
 			output += (links.get(i) + " , ");
+		}
+		output += "\nWith images: ";
+		for (int i = 0; i < images.size(); i++) {
+			output += (images.get(i) + " , ");
+		}
+		output += "\nWith parameters: ";
+		for (int i = 0; i < parameters.size(); i++) {
+			output += (parameters.get(i) + " , ");
 		}
 		output += "\nAt: " + position;
 		return output;
