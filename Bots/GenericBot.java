@@ -113,27 +113,21 @@ public class GenericBot extends java.applet.Applet {
 		Template temp;
 		ArrayList<String> lines = page.getContent();
 		Position pos;
-		int k;
 		for (int i = 0; lines.size()>i; i++) {
 			for(int p = (lines.get(i)).indexOf("{{"); p != -1; p=(lines.get(i)).indexOf("{{", p+1)){
 				pos = new Position(i, p);
 				if (lines.get(i).indexOf("{{", p) != -1) {
-					if (lines.get(i).indexOf("}}", p) != -1) {
-						//We have a single line template.
-						temp = parseTemplate(lines.get(i), p, pos);
-						if (temp != null) {
-							page.addTemplate(temp);
-						}
-					} else {
-						//We have a multi-line template.
-						k = i;
-						for (int j = -1; j == -1 || lines.size()<=i; i++) {
-							j = lines.get(i).indexOf("}}", p);
-						}
-						if (lines.size()<i){
-							log("ERROR: Unclosed template detected at line " + k + ".");
+					Position end = findClosingIndex(page, "{{", "}}", new Position(i, lines.get(i).indexOf("{{", p)));
+					if (end != null) {
+						if (end.getLine() == i) {
+							//We have a single line template.
+							temp = parseTemplate(lines.get(i), p, pos);
+							if (temp != null) {
+								page.addTemplate(temp);
+							}
 						} else {
-							page.addTemplate(parseTemplate(new ArrayList<String>(lines.subList(k, i)), p, pos));
+							//We have a multi-line template.
+							page.addTemplate(parseTemplate(page, new ArrayList<String>(lines.subList(i, end.getLine())), p, pos));
 						}
 					}
 				}
@@ -141,7 +135,7 @@ public class GenericBot extends java.applet.Applet {
 		}
 	}
 	
-	static Template parseTemplate(ArrayList<String> text, int buffer, Position pos) {
+	static Template parseTemplate(Page page, ArrayList<String> text, int buffer, Position pos) {
 		//Parse multiple lines for a single template.
 		//Notification: MUST PARSE FOR TEMPLATE PARAMETERS
 		Template temp;
@@ -150,7 +144,7 @@ public class GenericBot extends java.applet.Applet {
 		} else {
 			temp = new Template(pos, (text.get(0)).substring(text.get(0).indexOf("{{", buffer) + 2));
 		}
-		parseTemplateTextForLinks(temp, text, buffer, pos);
+		parseTemplateTextForLinks(page, temp, text, buffer, pos);
 		return temp;
 	}
 	
@@ -174,15 +168,15 @@ public class GenericBot extends java.applet.Applet {
 		return temp;
 	}
 	
-	static void parseTemplateTextForLinks(Template temp, ArrayList<String> lines, int buffer, Position pos) {
+	static void parseTemplateTextForLinks(Page page, Template temp, ArrayList<String> lines, int buffer, Position pos) {
 		//Parse multiple lines for links.
-		parseLineForLinksImagesCategories(null, temp, lines.get(0), buffer, maxI, pos, false);
+		parseLineForLinksImagesCategories(page, temp, lines.get(0), buffer, maxI, pos, false);
 		for (int i = 1; i < lines.size(); i++) {
 			pos.increaseLine(1);
 			if (i+1 < lines.size()) {
-				parseLineForLinksImagesCategories(null, temp, lines.get(i), buffer, maxI, pos, false);
+				parseLineForLinksImagesCategories(page, temp, lines.get(i), buffer, maxI, pos, false);
 			} else {
-				parseLineForLinksImagesCategories(null, temp, lines.get(i), buffer, (lines.get(i).indexOf("}}")), pos, false);
+				parseLineForLinksImagesCategories(page, temp, lines.get(i), buffer, (lines.get(i).indexOf("}}")), pos, false);
 			}
 		}
 	}
@@ -230,7 +224,7 @@ public class GenericBot extends java.applet.Applet {
 						if (i > j || i == -1) {
 							i = k;
 						} else {
-							i = findClosingIndex(page, "[[", "]]", new Position(pos.getLine(), k));
+							i = findClosingIndex(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
 						}
 					}
 				} else {
@@ -352,36 +346,36 @@ public class GenericBot extends java.applet.Applet {
 		
 	}
 	
-	static public int findClosingIndex(Page page, String open, String close, Position start) {
+	static public Position findClosingIndex(Page page, String open, String close, Position start) {
 		//Method for finding where [[ ]] and {{ }} end.
 		int m = 1;
+		int l = start.getLine();
 		int i = start.getPosInLine();
 		int j;
 		int k = 0;
 
-		String line;
-		for (int l = start.getLine(); m>0; l++) {
-			//Looking one line at a time.
-			line = page.getContentLine(l);
-			k = i;
-			i = line.indexOf(open, i+1);
-			j = line.indexOf(close, k+1);
-			if (i > j || i == -1) {
-				i = k;
-			} else {
-				System.out.println(start);
+		String line = page.getContentLine(l);
+		k = i;
+		i = line.indexOf(open, i+1);
+		j = line.indexOf(close, k+1);
+		if (i > j || (i == -1 && j != -1)) {
+			m = 0;
+			k = j;
+		} else {
+			for (l = start.getLine(); m>0 && l < page.getLineCount(); l++) {
+				//Looking one line at a time.
+				line = page.getContentLine(l);
+	
 				do {
 					//Checking individual line.
-					if (i<j && i != -1) {
+					if (i<=j && i != -1) {
 						if (i != -1) {
-							System.out.println(i + ":" + j);
 							k = i;
 							i = line.indexOf(open, i+1);
 							j = line.indexOf(close, k+1);
-							System.out.println(i + ":" + j);
 						}
 						m++;
-					} else {
+					} else if (j != -1) {
 						if (i != -1) {
 							i = line.indexOf(open, j+1);
 						}
@@ -391,15 +385,19 @@ public class GenericBot extends java.applet.Applet {
 							k = j;
 						}
 					}
-				} while (m != 0);
-			}
-			l++;
-			if (m != 0) {
-				i = 0;
-				j = 0;
+				} while (m != 0 && (j != -1 && i != -1));
+				if (m != 0) {
+					i = line.indexOf(open, 0);
+					j = line.indexOf(close, 0);
+					k = 0;
+				}
 			}
 		}
-		return k;
+		if (l > page.getLineCount()) {
+			log("ERROR: Unclosed parseable item at: " + start);
+			return null;
+		}
+		return new Position(l, k+1);
 	}
 	
 	static public String[] getURL(String ur) throws IOException {
