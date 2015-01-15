@@ -44,22 +44,7 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		for (int i = 0; i < webpage.getLineCount(); i++) {
-			System.out.println(webpage.getContentLine(i));
-		}
-
-		ArrayList<Template> temp = webpage.getTemplates();
-		ArrayList<Link> links;
-		for (int i = 0; i < temp.size(); i ++) {
-			System.out.println(temp.get(i));
-		}
-		
-		links = webpage.getLinks();
-		for (int i = 0; i < links.size(); i ++) {
-			System.out.println(links.get(i));
-		}
-		
-		printLog();
+		System.out.println(webpage);
 	}
 	
 	static public Page getWikiPage(String name) {
