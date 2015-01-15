@@ -43,9 +43,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
-		String test = "Category:Cats";
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		System.out.println(test.substring(1, test.length()-1));
 		for (int i = 0; i < webpage.getLineCount(); i++) {
 			System.out.println(webpage.getContentLine(i));
 		}
@@ -119,6 +117,7 @@ public class GenericBot extends java.applet.Applet {
 				pos = new Position(i, p);
 				if (lines.get(i).indexOf("{{", p) != -1) {
 					Position end = findClosingIndex(page, "{{", "}}", new Position(i, lines.get(i).indexOf("{{", p)));
+					System.out.println(end + ":" + pos);
 					if (end != null) {
 						if (end.getLine() == i) {
 							//We have a single line template.
@@ -128,7 +127,7 @@ public class GenericBot extends java.applet.Applet {
 							}
 						} else {
 							//We have a multi-line template.
-							page.addTemplate(parseTemplate(page, new ArrayList<String>(lines.subList(i, end.getLine())), p, pos));
+							page.addTemplate(parseTemplate(page, new ArrayList<String>(lines.subList(i, end.getLine()+1)), p, pos));
 						}
 					}
 				}
@@ -363,9 +362,9 @@ public class GenericBot extends java.applet.Applet {
 			m = 0;
 			k = j;
 		} else {
-			for (l = start.getLine(); m>0 && l < page.getLineCount(); l++) {
+			do {
 				//Looking one line at a time.
-				line = page.getContentLine(l);
+
 	
 				do {
 					//Checking individual line.
@@ -388,11 +387,13 @@ public class GenericBot extends java.applet.Applet {
 					}
 				} while (m != 0 && j != -1);
 				if (m != 0) {
+					l++;
+					line = page.getContentLine(l);
 					i = line.indexOf(open, 0);
 					j = line.indexOf(close, 0);
 					k = 0;
 				}
-			}
+			} while(m>0 && l < page.getLineCount());
 		}
 		if (l > page.getLineCount()) {
 			log("ERROR: Unclosed parseable item at: " + start);
