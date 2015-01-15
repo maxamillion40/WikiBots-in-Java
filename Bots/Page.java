@@ -120,5 +120,32 @@ public class Page {
 		//CODE CODE CODE CODE CODE CODE CODE
 		return null;
 	}
+	
+	@Override
+	public String toString() {
+		String output;
+
+		output = "PAGE PAGE ;; Name: " + title + " ;; PAGE PAGE\nWith id: " + pageID  + "\n";
+		for (int i = 0; i < content.size(); i++) {
+			output += (content.get(i) + "\n");
+		}
+		output += "\nWith links: \n";
+		for (int i = 0; i < links.size(); i++) {
+			output += (links.get(i) + "\n");
+		}
+		output += "\nWith templates: \n";
+		for (int i = 0; i < templates.size(); i++) {
+			output += (templates.get(i) + "\n");
+		}
+		output += "\nWith images: \n";
+		for (int i = 0; i < images.size(); i++) {
+			output += (images.get(i) + "\n");
+		}
+		output += "\nWith categories: \n";
+		for (int i = 0; i < categories.size(); i++) {
+			output += (categories.get(i) + ",");
+		}
+		return output;
+	}
 }
 
