@@ -30,6 +30,7 @@ public class GenericBot extends java.applet.Applet {
 		//Look at method paint() for window code.
 		setSize(400,400);
 		setBackground(new Color(255,255,255));
+		MagicWords.add("CURRENTDAY");
 	}
 	
 	public void paint(Graphics g) {
@@ -385,7 +386,7 @@ public class GenericBot extends java.applet.Applet {
 							k = j;
 						}
 					}
-				} while (m != 0 && (j != -1 && i != -1));
+				} while (m != 0 && j != -1);
 				if (m != 0) {
 					i = line.indexOf(open, 0);
 					j = line.indexOf(close, 0);
