@@ -353,7 +353,7 @@ public class GenericBot extends java.applet.Applet {
 	}
 	
 	static public int findClosingIndex(Page page, String open, String close, Position start) {
-		//Methid for finding where [[ ]] and {{ }} end.
+		//Method for finding where [[ ]] and {{ }} end.
 		int m = 1;
 		int i = start.getPosInLine();
 		int j;
