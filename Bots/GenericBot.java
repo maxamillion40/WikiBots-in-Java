@@ -224,30 +224,13 @@ public class GenericBot extends java.applet.Applet {
 						}
 					} else {
 						//We have an image!
-						int m = 1;
 						k = i;
 						i = line.indexOf("[[", i+1);
 						j = line.indexOf("]]", k+1);
 						if (i > j || i == -1) {
 							i = k;
 						} else {
-							do {
-								if (i<j && i != -1) {
-									if (i != -1) {
-										k = i;
-										i = line.indexOf("[[", i+1);
-										j = line.indexOf("]]", k+1);
-									}
-									m++;
-								} else {
-									if (i != -1) {
-										i = line.indexOf("[[", j+1);
-									}
-									j = line.indexOf("]]", j+1);
-									m--;
-								}
-							} while (m != 0);
-							i = k;
+							i = findClosingIndex(page, "[[", "]]", new Position(pos.getLine(), k));
 						}
 					}
 				} else {
@@ -367,6 +350,56 @@ public class GenericBot extends java.applet.Applet {
 	static public void parsePageForCategories(Page page) {
 		//Position, Title, Parameters
 		
+	}
+	
+	static public int findClosingIndex(Page page, String open, String close, Position start) {
+		//Methid for finding where [[ ]] and {{ }} end.
+		int m = 1;
+		int i = start.getPosInLine();
+		int j;
+		int k = 0;
+
+		String line;
+		for (int l = start.getLine(); m>0; l++) {
+			//Looking one line at a time.
+			line = page.getContentLine(l);
+			k = i;
+			i = line.indexOf(open, i+1);
+			j = line.indexOf(close, k+1);
+			if (i > j || i == -1) {
+				i = k;
+			} else {
+				System.out.println(start);
+				do {
+					//Checking individual line.
+					if (i<j && i != -1) {
+						if (i != -1) {
+							System.out.println(i + ":" + j);
+							k = i;
+							i = line.indexOf(open, i+1);
+							j = line.indexOf(close, k+1);
+							System.out.println(i + ":" + j);
+						}
+						m++;
+					} else {
+						if (i != -1) {
+							i = line.indexOf(open, j+1);
+						}
+						j = line.indexOf(close, j+1);
+						m--;
+						if (m != 0) {
+							k = j;
+						}
+					}
+				} while (m != 0);
+			}
+			l++;
+			if (m != 0) {
+				i = 0;
+				j = 0;
+			}
+		}
+		return k;
 	}
 	
 	static public String[] getURL(String ur) throws IOException {
