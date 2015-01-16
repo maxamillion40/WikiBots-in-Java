@@ -241,30 +241,29 @@ public class GenericBot extends java.applet.Applet {
 				} else {
 					text = line.substring(i+2, j);
 				}
-				if (!(text.length() > 9 && text.substring(0,9).equals("Category:"))) {
-					if (!(text.length() > 5 && text.substring(0,5).equals("File:"))) {
-						//We have a link!
-						Link link = parseLink(page, line, text, i, pos, pageNotTemp);
-						if (link != null) {
-							if (pageNotTemp) {
-								page.addLink(link);
-							} else {
-								templ.addLink(link);
-							}
-						}
+				if ((text.length() > 9 && text.substring(0,9).equals("Category:"))) {
+					//We have a category!
+
+				} else if ((text.length() > 5 && text.substring(0,5).equals("File:"))) {
+					//We have an image!
+					k = i;
+					i = line.indexOf("[[", i+1);
+					j = line.indexOf("]]", k+1);
+					if (i > j || i == -1) {
+						i = k;
 					} else {
-						//We have an image!
-						k = i;
-						i = line.indexOf("[[", i+1);
-						j = line.indexOf("]]", k+1);
-						if (i > j || i == -1) {
-							i = k;
-						} else {
-							i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
-						}
+						i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
 					}
 				} else {
-					//We have a category!
+					//We have a link!
+					Link link = parseLink(page, line, text, i, pos, pageNotTemp);
+					if (link != null) {
+						if (pageNotTemp) {
+							page.addLink(link);
+						} else {
+							templ.addLink(link);
+						}
+					}
 				}
 				//Iteration!
 				k = i;	
