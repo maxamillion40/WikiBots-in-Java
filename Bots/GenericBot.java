@@ -138,7 +138,7 @@ public class GenericBot extends java.applet.Applet {
 		//Parse a single line for a single template.
 		String title;
 		Template temp;
-		if (text.indexOf("|", buffer) != -1) {
+		if (text.indexOf("|", buffer) != -1 && text.indexOf("|", buffer) < text.indexOf("}}", buffer)) {
 			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
 			temp = new Template(pos, title);
 			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
@@ -406,7 +406,6 @@ public class GenericBot extends java.applet.Applet {
 			do {
 				//Looking one line at a time.
 
-	
 				do {
 					//Checking individual line.
 					if (i<=j && i != -1) {
