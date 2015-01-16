@@ -130,7 +130,7 @@ public class GenericBot extends java.applet.Applet {
 			temp = new Template(pos, (text.get(0)).substring(text.get(0).indexOf("{{", buffer) + 2));
 		}
 		parseTemplateTextForLinks(page, temp, text, buffer, pos);
-		parseTextForParameters(page, temp, text, buffer, topBuffer, pos);
+		parseTextForParameters(page, temp, null, text, buffer, topBuffer, pos, true);
 		return temp;
 	}
 	
@@ -142,7 +142,7 @@ public class GenericBot extends java.applet.Applet {
 			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
 			temp = new Template(pos, title);
 			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
-			parseTextForParameters(page, temp, new ArrayList<String>(Arrays.asList(text)), buffer, topBuffer, pos);
+			parseTextForParameters(page, temp, null, new ArrayList<String>(Arrays.asList(text)), buffer, topBuffer, pos, true);
 		} else {
 			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
 			if (MagicWords.contains(title)) {
@@ -150,18 +150,19 @@ public class GenericBot extends java.applet.Applet {
 			} else {
 				temp = new Template(pos, title);
 				parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
-				parseTextForParameters(page, temp, new ArrayList<String>(Arrays.asList(text)), buffer, topBuffer, pos);
+				parseTextForParameters(page, temp, null, new ArrayList<String>(Arrays.asList(text)), buffer, topBuffer, pos, true);
 			}
 		}
 		return temp;
 	}
 	
-	static void parseTextForParameters(Page page, Template templ, ArrayList<String> text, int buffer, int topBuffer, Position pos) {
+	static void parseTextForParameters(Page page, Template templ, Image img, ArrayList<String> text, int buffer, int topBuffer, Position pos, boolean TemplNotImg) {
 		//We find parameters in templates.
 		String line;
 		int j = -1;
 		int k = -1;
 		int q;
+		String param = "";
 		for (int i = 0; i < text.size(); i++) {
 			//This for loop goes through a line at a time.
 			line = text.get(i);
@@ -176,7 +177,7 @@ public class GenericBot extends java.applet.Applet {
 					j = line.indexOf("|", j+1);
 				}
 				
-				//To ensure links don't mess up parsing.
+				//To ensure links don't mess up parameter parsing.
 				q = line.indexOf("[[", k);
 				while (q < j && q != -1) {
 					if (q < j && q != -1) {
@@ -185,19 +186,24 @@ public class GenericBot extends java.applet.Applet {
 					}
 					q = line.indexOf("[[", q);
 				}
-
+				
 				if (j == -1 && k != -1) {
 					if (i + 1 == text.size()) {
-						templ.addParameter(line.substring(k+1, topBuffer-1));
+						param = line.substring(k+1, topBuffer-1);
 					} else {
-						templ.addParameter(line.substring(k+1, line.length()));
+						param = line.substring(k+1, line.length());
 					}
 				} else if (j != -1 && k != -1) {
 					if (i + 1 == text.size() && j > topBuffer) {
-						templ.addParameter(line.substring(k+1, topBuffer));
+						param = line.substring(k+1, topBuffer);
 					} else {
-						templ.addParameter(line.substring(k+1, j));
+						param = line.substring(k+1, j);
 					}
+				}
+				if (TemplNotImg) {
+					templ.addParameter(param);
+				} else {
+					img.addParameter(param);
 				}
 			}
 			j = -1;
