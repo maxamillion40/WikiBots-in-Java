@@ -1,3 +1,4 @@
+//Watch Swing tutorial on java website.
 /**
  * Generic Bot is the parent of every other bot.
  */
@@ -21,6 +22,7 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> log = new ArrayList<String>();
 	static ArrayList<String> Interwiki = new ArrayList<String>(Arrays.asList("de:", "id:", "ru:"));
 	static ArrayList<String> MagicWords = new ArrayList<String>();
+	static ArrayList<String> NonTemplates = new ArrayList<String>();
 	static String articleName = "";
 	static final int maxI = Integer.MAX_VALUE;
 	
@@ -106,13 +108,13 @@ public class GenericBot extends java.applet.Applet {
 					if (end != null) {
 						if (end.getLine() == i) {
 							//We have a single line template.
-							temp = parseTemplate(page, lines.get(i), p, end.getPosInLine(), pos);
-							if (temp != null) {
-								page.addTemplate(temp);
-							}
+							temp = parseTemplate(page, new ArrayList<String>(Arrays.asList(lines.get(i))), p, end.getPosInLine(), pos);
 						} else {
 							//We have a multi-line template.
-							page.addTemplate(parseTemplate(page, new ArrayList<String>(lines.subList(i, end.getLine()+1)), p, end.getPosInLine(), pos));
+							temp = parseTemplate(page, new ArrayList<String>(lines.subList(i, end.getLine()+1)), p, end.getPosInLine(), pos);
+						}
+						if (temp != null) {
+							page.addTemplate(temp);
 						}
 					}
 				}
@@ -124,35 +126,24 @@ public class GenericBot extends java.applet.Applet {
 		//Parse multiple lines for a single template.
 		//Notification: MUST PARSE FOR TEMPLATE PARAMETERS
 		Template temp;
-		if (text.get(0).indexOf("|", buffer) != -1) {
-			temp = new Template(pos, (text.get(0).substring(text.get(0).indexOf("{{", buffer) + 2, text.get(0).indexOf("|", buffer))));
-		} else {
-			temp = new Template(pos, (text.get(0)).substring(text.get(0).indexOf("{{", buffer) + 2));
-		}
-		parseTemplateTextForLinks(page, temp, text, buffer, pos);
-		parseTextForParameters(page, temp, null, text, buffer, topBuffer, pos, true);
-		return temp;
-	}
-	
-	static Template parseTemplate(Page page, String text, int buffer, int topBuffer, Position pos) {
-		//Parse a single line for a single template.
 		String title;
-		Template temp;
-		if (text.indexOf("|", buffer) != -1 && text.indexOf("|", buffer) < text.indexOf("}}", buffer)) {
-			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("|", buffer));
+		if (text.get(0).indexOf("|", buffer) != -1 && ((text.get(0).indexOf("|", buffer) < text.get(0).indexOf("}}", buffer)) || text.size() != 1)) {
+			title = text.get(0).substring(text.get(0).indexOf("{{", buffer) + 2, text.get(0).indexOf("|", buffer));
 			temp = new Template(pos, title);
-			parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
-			parseTextForParameters(page, temp, null, new ArrayList<String>(Arrays.asList(text)), buffer, topBuffer, pos, true);
 		} else {
-			title = text.substring(text.indexOf("{{", buffer) + 2, text.indexOf("}}", buffer));
-			if (MagicWords.contains(title)) {
+			if (text.get(0).indexOf("}}", buffer) != -1) {
+				title = text.get(0).substring(text.get(0).indexOf("{{", buffer) + 2, text.get(0).indexOf("}}", buffer));
+			} else {
+				title = text.get(0).substring(text.get(0).indexOf("{{", buffer) + 2);
+			}
+			if (MagicWords.contains(title) || NonTemplates.contains(title)) {
 				return null;
 			} else {
 				temp = new Template(pos, title);
-				parseLineForLinksImagesCategories(null, temp, text, buffer, text.indexOf("}}", buffer), pos, false);
-				parseTextForParameters(page, temp, null, new ArrayList<String>(Arrays.asList(text)), buffer, topBuffer, pos, true);
 			}
 		}
+		parseTemplateTextForLinks(page, temp, text, buffer, pos);
+		parseTextForParameters(page, temp, null, text, buffer, topBuffer, pos, true);
 		return temp;
 	}
 	
@@ -200,10 +191,12 @@ public class GenericBot extends java.applet.Applet {
 						param = line.substring(k+1, j);
 					}
 				}
-				if (TemplNotImg) {
-					templ.addParameter(param);
-				} else {
-					img.addParameter(param);
+				if (m != 0) {
+					if (TemplNotImg) {
+						templ.addParameter(param);
+					} else {
+						img.addParameter(param);
+					}
 				}
 			}
 			j = -1;
@@ -213,8 +206,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	static void parseTemplateTextForLinks(Page page, Template temp, ArrayList<String> lines, int buffer, Position pos) {
 		//Parse multiple lines for links.
-		parseLineForLinksImagesCategories(page, temp, lines.get(0), buffer, maxI, pos, false);
-		for (int i = 1; i < lines.size(); i++) {
+		for (int i = 0; i < lines.size(); i++) {
 			if (i+1 < lines.size()) {
 				parseLineForLinksImagesCategories(page, temp, lines.get(i), buffer, maxI, new Position(pos.getLine() + i, pos.getPosInLine()), false);
 			} else {
