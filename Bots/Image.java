@@ -19,6 +19,10 @@ public class Image {
 		links = null;
 	}
 	
+	public void addParameter(String param) {
+		parameters.add(param);
+	}
+	
 	public void setLinks(ArrayList<Link> links_) {
 		links = links_;
 	}
