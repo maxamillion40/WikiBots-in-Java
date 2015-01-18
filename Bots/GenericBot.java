@@ -1,3 +1,4 @@
+//Watch Swing tutorial on java website.
 /**
  * Generic Bot is the parent of every other bot.
  */
@@ -22,7 +23,6 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> Interwiki = new ArrayList<String>(Arrays.asList("de:", "id:", "ru:"));
 	static ArrayList<String> MagicWords = new ArrayList<String>();
 	static ArrayList<String> NonTemplates = new ArrayList<String>();
-	static String articleName = "";
 	static final int maxI = Integer.MAX_VALUE;
 	
 	public void init() {
@@ -66,7 +66,6 @@ public class GenericBot extends java.applet.Applet {
 		 * Note to self: Please test on multiple pages to make sure it works flawlessly.
 		 **/
 		Page newPage = new Page(parseXMLforInfo("title", XMLcode, 3, 1), Integer.parseInt(parseXMLforInfo("pageid", XMLcode, 2, 0)));
-		articleName = newPage.getTitle();
 		
 		String line = "";
 		int j = 0;
@@ -302,7 +301,7 @@ public class GenericBot extends java.applet.Applet {
 		if (temp) {
 			if (text.substring(0,2).equals("/")) {
 				//This link is headed to a subpage and the destination must reflect that.
-				text = articleName + text;
+				text = page.getTitle() + text;
 				if (text.substring(text.length()-1).equals("/")) {
 					linkText = text.substring(1, text.length()-1);
 				}
