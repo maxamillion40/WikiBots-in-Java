@@ -1,4 +1,3 @@
-//Watch Swing tutorial on java website.
 /**
  * Generic Bot is the parent of every other bot.
  */
