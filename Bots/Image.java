@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class Image {
 	Position position;
 	String name;
-	ArrayList<String> parameters;
+	ArrayList<String> parameters = new ArrayList<String>();
 	ArrayList<Link> links = new ArrayList<Link>();
 	
 	public Image(Position pos_, String name_, ArrayList<String> params, ArrayList<Link> links_) {
@@ -62,6 +62,10 @@ public class Image {
 		output = "(Image) Name: " + name + "\nWith links: ";
 		for (int i = 0; i < links.size(); i++) {
 			output += (links.get(i) + " , ");
+		}
+		output += "\nWith parameters: ";
+		for (int i = 0; i < parameters.size(); i++) {
+			output += (parameters.get(i) + " , ");
 		}
 		output += "\nAt: " + position;
 		return output;
