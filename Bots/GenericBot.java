@@ -249,6 +249,16 @@ public class GenericBot extends java.applet.Applet {
 					} else {
 						i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
 					}
+					Image image = parseImage(page, line, text, i, pos, pageNotTemp);
+					if (image == null) {
+						log("Image Error at: " + pos);
+					} else {
+						if (pageNotTemp) {
+							page.addImage(image);
+						} else {
+							templ.addImage(image);
+						}
+					}
 				} else {
 					//We have a link!
 					Link link = parseLink(page, line, text, i, pos, pageNotTemp);
@@ -361,6 +371,11 @@ public class GenericBot extends java.applet.Applet {
 			}
 		}
 		return null;
+	}
+	
+	static public Image parseImage(Page page, String line, String text, int i, Position pos, boolean pageNotTemp) {
+		Image image = new Image(pos, text);
+		return image;
 	}
 	
 	static public void parsePageForLinks(Page page) {
