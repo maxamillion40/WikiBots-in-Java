@@ -4,7 +4,7 @@ public class Image {
 	Position position;
 	String name;
 	ArrayList<String> parameters;
-	ArrayList<Link> links = null;
+	ArrayList<Link> links = new ArrayList<Link>();
 	
 	public Image(Position pos_, String name_, ArrayList<String> params, ArrayList<Link> links_) {
 		position = pos_;
@@ -16,7 +16,6 @@ public class Image {
 	public Image(Position pos_, String name_) {
 		position = pos_;
 		name = name_;
-		links = null;
 	}
 	
 	public void addParameter(String param) {
