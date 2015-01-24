@@ -44,7 +44,9 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
+		System.out.println("Category:Cats".substring(9));
 		System.out.println(webpage);
+		printLog();
 	}
 	
 	static public Page getWikiPage(String name) {
@@ -237,14 +239,14 @@ public class GenericBot extends java.applet.Applet {
 				if (line.indexOf("||", i) != -1 && line.indexOf("||", i) < j) {
 					log("ERROR: Double pipes detected in link/image/category at " + new Position(pos.getLine(), i) + ".");
 				}
-				if (line.indexOf("|", i) != -1 && line.indexOf("|", i) <= j) {
+				if (line.indexOf("|", i) != -1 && line.indexOf("|", i) < j) {
 					text = line.substring(i+2, line.indexOf("|", i));	
 				} else {
 					text = line.substring(i+2, j);
 				}
 				if ((text.length() > 9 && text.substring(0,9).equals("Category:"))) {
 					//We have a category!
-
+					page.addCategory(text.substring(9));
 				} else if ((text.length() > 5 && text.substring(0,5).equals("File:"))) {
 					//We have an image!
 					k = i;
