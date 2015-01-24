@@ -46,9 +46,9 @@ public class Image {
 		return links;
 	}
 	
-	public boolean containsLink(String link) {
+	public boolean containsLink(Link link) {
 		for (int i = 0; i < links.size(); i++) {
-			if ((links.get(i)).getDestination() == link) {
+			if ((links.get(i)).equals(link)) {
 				return true;
 			}
 		}
