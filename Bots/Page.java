@@ -107,6 +107,15 @@ public class Page {
 		return false;
 	}
 	
+	public boolean imagesContainLink(Link link) {
+		for (int i = 0; i < images.size(); i ++) {
+			if ((images.get(i)).containsLink(link)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean containsCategory(String category) {
 		for (int i = 0; i < categories.size(); i++) {
 			if ((categories.get(i)).equals(category)) {
