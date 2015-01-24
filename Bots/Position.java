@@ -35,3 +35,4 @@ public class Position {
 		return "line " + (line+1) + " and letter " + (posInLine+1);
 	}
 }
+
