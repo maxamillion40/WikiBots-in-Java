@@ -14,7 +14,7 @@ public class Page {
 	ArrayList<Link> links = new ArrayList<Link>();
 	ArrayList<Template> templates = new ArrayList<Template>();
 	ArrayList<Image> images = new ArrayList<Image>();
-	ArrayList<Category> categories = new ArrayList<Category>();
+	ArrayList<String> categories = new ArrayList<String>();
 	
 	public Page(String title_, int pageID_) {
 		title = title_;
@@ -41,8 +41,8 @@ public class Page {
 		images = images_;
 	}
 	
-	public void setCategories(ArrayList<Category> categories_) {
-		categories = categories_;
+	public void addCategories(String category) {
+		categories.add(category);
 	}
 	
 	public void addLine(String content_) {
@@ -56,6 +56,11 @@ public class Page {
 	public void addTemplate(Template template) {
 		templates.add(template);
 	}
+	
+	public void addImage(Image image) {
+		images.add(image);
+	}
+	
 	
 	public String getTitle() {
 		return title;
@@ -104,21 +109,11 @@ public class Page {
 	
 	public boolean containsCategory(String category) {
 		for (int i = 0; i < categories.size(); i++) {
-			if ((categories.get(i)).containsCategory(category)) {
+			if ((categories.get(i)).equals(category)) {
 				return true;
 			}
 		}
 		return false;
-	}
-	
-	public Position getLink() {
-		//CODE CODE CODE CODE CODE CODE CODE
-		return null;
-	}
-	
-	public Position getWord() {
-		//CODE CODE CODE CODE CODE CODE CODE
-		return null;
 	}
 	
 	@Override
