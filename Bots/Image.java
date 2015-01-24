@@ -22,8 +22,8 @@ public class Image {
 		parameters.add(param);
 	}
 	
-	public void setLinks(ArrayList<Link> links_) {
-		links = links_;
+	public void addLink(Link link) {
+		links.add(link);
 	}
 	
 	public Position getPosition() {
