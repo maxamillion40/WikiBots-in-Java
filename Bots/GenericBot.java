@@ -44,7 +44,6 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		System.out.println("Category:Cats".substring(9));
 		System.out.println(webpage);
 		printLog();
 	}
