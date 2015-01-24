@@ -41,7 +41,7 @@ public class Page {
 		images = images_;
 	}
 	
-	public void addCategories(String category) {
+	public void addCategory(String category) {
 		categories.add(category);
 	}
 	
@@ -143,4 +143,3 @@ public class Page {
 		return output;
 	}
 }
-
