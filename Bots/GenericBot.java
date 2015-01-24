@@ -205,14 +205,20 @@ public class GenericBot extends java.applet.Applet {
 		//Parse multiple lines for links.
 		for (int i = 0; i < lines.size(); i++) {
 			if (i+1 < lines.size()) {
-				parseLineForLinksImagesCategories(page, temp, lines.get(i), buffer, maxI, new Position(pos.getLine() + i, pos.getPosInLine()), false);
+				parseLineForLinksImagesCategories(page, temp, null, lines.get(i), buffer, maxI, new Position(pos.getLine() + i, pos.getPosInLine()), 1);
 			} else {
-				parseLineForLinksImagesCategories(page, temp, lines.get(i), buffer, (lines.get(i).indexOf("}}")), new Position(pos.getLine() + i, pos.getPosInLine()), false);
+				parseLineForLinksImagesCategories(page, temp, null, lines.get(i), buffer, (lines.get(i).indexOf("}}")), new Position(pos.getLine() + i, pos.getPosInLine()), 1);
 			}
 		}
 	}
 	
-	static void parseLineForLinksImagesCategories(Page page, Template templ, String line, int buffer, int topBuffer, Position pos, boolean pageNotTemp) {
+	static void parseLineForLinksImagesCategories(Page page, Template templ, Image img, String line, int buffer, int topBuffer, Position pos, int inputDataType) {
+		/*
+		 * Variable Input Data Type:
+		 * 0-Page (true)
+		 * 1-Template (false)
+		 * 2-Image
+		 */
 		//Parse a single line for links.
 		//ADD IN IMAGE AND CATEGORY PARSING
 		int i = line.indexOf("[[", buffer);
@@ -249,11 +255,11 @@ public class GenericBot extends java.applet.Applet {
 					} else {
 						i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
 					}
-					Image image = parseImage(page, line, text, i, pos, j+2, pageNotTemp);
+					Image image = parseImage(page, line, text, i, pos, j+2, inputDataType == 0);
 					if (image == null) {
 						log("Image Error at: " + pos);
 					} else {
-						if (pageNotTemp) {
+						if (inputDataType == 0) {
 							page.addImage(image);
 						} else {
 							templ.addImage(image);
@@ -261,12 +267,16 @@ public class GenericBot extends java.applet.Applet {
 					}
 				} else {
 					//We have a link!
-					Link link = parseLink(page, line, text, i, pos, pageNotTemp);
+					Link link = parseLink(page, line, text, i, pos, inputDataType == 0);
 					if (link != null) {
-						if (pageNotTemp) {
+						if (inputDataType == 0) {
 							page.addLink(link);
 						} else {
-							templ.addLink(link);
+							if (inputDataType == 1) {
+								templ.addLink(link);
+							} else {
+								img.addLink(link);
+							}
 						}
 					}
 				}
@@ -278,7 +288,7 @@ public class GenericBot extends java.applet.Applet {
 				//We might have an external link. Must check.
 				Link link = parseExternalLink(page, line, k, j, pos);
 				if (link != null) {
-					if (pageNotTemp) {
+					if (inputDataType == 0) {
 						page.addLink(link);
 					} else {
 						templ.addLink(link);
@@ -377,6 +387,7 @@ public class GenericBot extends java.applet.Applet {
 		//Position, name, parameters, links.
 		Image image = new Image(pos, text);
 		parseTextForParameters(page, null, image, new ArrayList<String>(Arrays.asList(line.substring(pos.getPosInLine()+1, topBuffer+1))), pos.getPosInLine(), topBuffer+1, pos, false);
+		parseLineForLinksImagesCategories(page, null, image, line, pos.getPosInLine()+1, topBuffer+1, pos, 2);
 		return image;
 	}
 	
@@ -384,7 +395,7 @@ public class GenericBot extends java.applet.Applet {
 		//Position, Link, Link Text
 		ArrayList<String> content = page.getContent();
 		for (int i = 0; i < content.size(); i++) {
-			parseLineForLinksImagesCategories(page, null, content.get(i), 0, maxI, new Position(i, 0), true);
+			parseLineForLinksImagesCategories(page, null, null, content.get(i), 0, maxI, new Position(i, 0), 0);
 		}
 	}
 	
