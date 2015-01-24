@@ -249,7 +249,7 @@ public class GenericBot extends java.applet.Applet {
 					} else {
 						i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
 					}
-					Image image = parseImage(page, line, text, i, pos, pageNotTemp);
+					Image image = parseImage(page, line, text, i, pos, j+2, pageNotTemp);
 					if (image == null) {
 						log("Image Error at: " + pos);
 					} else {
@@ -373,8 +373,10 @@ public class GenericBot extends java.applet.Applet {
 		return null;
 	}
 	
-	static public Image parseImage(Page page, String line, String text, int i, Position pos, boolean pageNotTemp) {
+	static public Image parseImage(Page page, String line, String text, int i, Position pos, int topBuffer, boolean pageNotTemp) {
+		//Position, name, parameters, links.
 		Image image = new Image(pos, text);
+		parseTextForParameters(page, null, image, new ArrayList<String>(Arrays.asList(line.substring(pos.getPosInLine()+1, topBuffer+1))), pos.getPosInLine(), topBuffer+1, pos, false);
 		return image;
 	}
 	
