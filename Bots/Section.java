@@ -27,6 +27,6 @@ public class Section {
 	}
 	
 	public String toString2() {
-		return "(Section) Title: " + title + " (Position: " + position + ")";
+		return "(Section) Title: " + title;
 	}
 }
