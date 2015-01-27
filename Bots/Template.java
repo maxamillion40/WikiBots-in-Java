@@ -32,10 +32,6 @@ public class Template {
 		links.add(link);
 	}
 	
-	public void setLinks(ArrayList<Link> links_) {
-		links = links_;
-	}
-	
 	public Position getPosition() {
 		return position;
 	}
