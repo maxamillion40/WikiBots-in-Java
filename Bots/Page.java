@@ -11,6 +11,7 @@ public class Page {
 	String title;
 	int pageID;
 	ArrayList<String> content = new ArrayList<String>();
+	ArrayList<Section> sections = new ArrayList<Section>();
 	ArrayList<Link> links = new ArrayList<Link>();
 	ArrayList<Template> templates = new ArrayList<Template>();
 	ArrayList<Image> images = new ArrayList<Image>();
@@ -21,6 +22,7 @@ public class Page {
 		pageID = pageID_;
 	}
 
+	//Set variables.
 	public void setContent(ArrayList<String> content_) {
 		content = content_;
 	}
@@ -33,21 +35,15 @@ public class Page {
 		}
 	}
 	
-	public void setTemplates(ArrayList<Template> templates_) {
-		templates = templates_;
-	}
-	
-	public void setImages(ArrayList<Image> images_) {
-		images = images_;
-	}
-	
-	public void addCategory(String category) {
-		categories.add(category);
-	}
-	
+	//Modify variables.
 	public void addLine(String content_) {
 		content.add(content_);
 	}
+	
+	public void addSection(Section section) {
+		sections.add(section);
+	}
+	
 	
 	public void addLink(Link link) {
 		links.add(link);
@@ -61,15 +57,22 @@ public class Page {
 		images.add(image);
 	}
 	
+	public void addCategory(String category) {
+		categories.add(category);
+	}
 	
+	//Get information.
+	//Title methods
 	public String getTitle() {
 		return title;
 	}
 	
+	//Page id methods
 	public int getPageID() {
 		return pageID;
 	}
 	
+	//Content methods
 	public ArrayList<String> getContent() {
 		return content;
 	}
@@ -78,26 +81,21 @@ public class Page {
 		return content.get(lineID);
 	}
 	
-	public ArrayList<Template> getTemplates() {
-		return templates;
-	}
-	
-	public ArrayList<Image> getImages() {
-		return images;
-	}
-	
-	public ArrayList<Link> getLinks() {
-		return links;
-	}
-	
 	public int getLineCount() {
 		return content.size();
 	}
 	
-	public boolean containsTemplate(String template) {
-		return templates.contains(template);
+	//Section methods
+	public Section getSection(int i) {
+		return sections.get(i);
 	}
 	
+	//Link methods
+	public ArrayList<Link> getLinks() {
+		return links;
+	}
+	
+	//Template methods
 	public boolean templatesContainLink(Link link) {
 		for (int i = 0; i < templates.size(); i ++) {
 			if ((templates.get(i)).containsLink(link)) {
@@ -105,6 +103,19 @@ public class Page {
 			}
 		}
 		return false;
+	}
+	
+	public ArrayList<Template> getTemplates() {
+		return templates;
+	}
+	
+	public boolean containsTemplate(String template) {
+		return templates.contains(template);
+	}
+	
+	//Image methods
+	public ArrayList<Image> getImages() {
+		return images;
 	}
 	
 	public boolean imagesContainLink(Link link) {
@@ -116,6 +127,7 @@ public class Page {
 		return false;
 	}
 	
+	//Category methods
 	public boolean containsCategory(String category) {
 		for (int i = 0; i < categories.size(); i++) {
 			if ((categories.get(i)).equals(category)) {
@@ -133,6 +145,13 @@ public class Page {
 		for (int i = 0; i < content.size(); i++) {
 			output += (content.get(i) + "\n");
 		}
+		output += "\nWith sections: \n";
+		for (int i = 0; i < sections.size(); i++) {
+			for (int j = 1; j < sections.get(i).getDepth(); j++) {
+				output += "{ ";
+			}
+			output += (sections.get(i).toString2() + "\n");
+		}	
 		output += "\nWith links: \n";
 		for (int i = 0; i < links.size(); i++) {
 			output += (links.get(i) + "\n");
@@ -147,7 +166,7 @@ public class Page {
 		}
 		output += "\nWith categories: \n";
 		for (int i = 0; i < categories.size(); i++) {
-			output += (categories.get(i) + ",");
+			output += (categories.get(i) + " , ");
 		}
 		return output;
 	}
