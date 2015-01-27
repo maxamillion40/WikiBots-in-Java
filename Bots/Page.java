@@ -90,6 +90,18 @@ public class Page {
 		return sections.get(i);
 	}
 	
+	public Section getSection(Position pos) {
+		int i = 0;
+		while (pos.isGreaterThen(sections.get(i).getPosition())) {
+			i++;
+		}
+		if (i == 0) {
+			return null;
+		} else {
+			return sections.get(i-1);
+		}
+	}
+	
 	//Link methods
 	public ArrayList<Link> getLinks() {
 		return links;
