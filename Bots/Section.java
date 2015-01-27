@@ -25,4 +25,8 @@ public class Section {
 	public String toString() {
 		return "(Section) Title: " + title + " Depth: " + depth + " (Position: " + position + ")";
 	}
+	
+	public String toString2() {
+		return "(Section) Title: " + title + " (Position: " + position + ")";
+	}
 }
