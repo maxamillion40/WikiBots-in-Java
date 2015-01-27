@@ -30,9 +30,22 @@ public class Position {
 		return false;
 	}
 	
+	public boolean isGreaterThen(Position pos) {
+		if (line > pos.getLine()) {
+			return true;
+		} else if (line < pos.getLine()) {
+			return false;
+		} else {
+			if (posInLine > pos.getPosInLine()) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return "line " + (line+1) + " and letter " + (posInLine+1);
 	}
 }
-
