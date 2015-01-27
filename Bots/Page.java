@@ -159,9 +159,6 @@ public class Page {
 		}
 		output += "\nWith sections: \n";
 		for (int i = 0; i < sections.size(); i++) {
-			for (int j = 1; j < sections.get(i).getDepth(); j++) {
-				output += "{ ";
-			}
 			output += (sections.get(i).toString2() + "\n");
 		}	
 		output += "\nWith links: \n";
