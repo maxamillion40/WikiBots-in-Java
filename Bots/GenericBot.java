@@ -81,6 +81,7 @@ public class GenericBot extends java.applet.Applet {
 		}
 		parsePageForTemplates(newPage);
 		parsePageForLinks(newPage);
+		parsePageForSections(newPage);
 		return newPage;
 	}
 	
@@ -400,11 +401,6 @@ public class GenericBot extends java.applet.Applet {
 		}
 	}
 	
-	static public void parsePageForCategories(Page page) {
-		//Position, Title, Parameters
-		
-	}
-	
 	static public Position findClosingPosition(Page page, String open, String close, Position start) {
 		//Method for finding where [[ ]] and {{ }} end.
 		int m = 1;
@@ -458,6 +454,38 @@ public class GenericBot extends java.applet.Applet {
 			return null;
 		}
 		return new Position(l, k+1);
+	}
+	
+	public static void parsePageForSections(Page page) {
+		//Position, title, depth.
+		ArrayList<String> content = page.getContent();
+		String line;
+		boolean found;
+		int index;
+		int index2;
+		Position pos;
+		int j;
+		for (int i = 0; i < content.size(); i++) {
+			line = content.get(i);
+			found = true;
+			for (j = 1; found; j++) {
+				found = false;
+				index = line.indexOf(new String(new char[j]).replace("\0", "="));
+				if (index == 0) {
+					index2 = line.indexOf(new String(new char[j]).replace("\0", "="), index+1);
+					if (index2 != -1) {
+						found = true;
+					}
+				}
+			}
+			j -= 2;
+			if (j != 0) {
+				index = line.indexOf(new String(new char[j]).replace("\0", "="));
+				index2 = line.indexOf(new String(new char[j]).replace("\0", "="), index+1);
+				pos = new Position(i, 0);
+				page.addSection(new Section(pos, line.substring(index+j, index2), j));
+			}
+		}
 	}
 	
 	static public String[] getURL(String ur) throws IOException {
