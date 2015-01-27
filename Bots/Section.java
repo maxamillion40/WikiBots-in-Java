@@ -27,6 +27,8 @@ public class Section {
 	}
 	
 	public String toString2() {
-		return "(Section) Title: " + title;
+		String output = new String(new char[depth-1]).replace("\0", "{");
+		output  += "(Section) Title: " + title;
+		return output;
 	}
 }
