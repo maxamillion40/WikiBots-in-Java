@@ -4,8 +4,13 @@
  
 import java.net.*;
 import java.io.*;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList; 
 import java.util.Arrays;
+import java.util.Locale;
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -24,7 +29,8 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> NonTemplates = new ArrayList<String>();
 	static final int maxI = Integer.MAX_VALUE;
 	static final int revisionDepth = 10;
-	static boolean getRevisionContent = false;
+	static boolean getRevisionContent = true;
+	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -47,7 +53,8 @@ public class GenericBot extends java.applet.Applet {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		//webpage = getWikiPage("User:ErnieParke/TestWikiBots");
 		webpage = getWikiPage("Activity Feeds");
-		//System.out.println(webpage);
+		System.out.println(webpage);
+
 		printLog();
 	}
 	
@@ -513,17 +520,67 @@ public class GenericBot extends java.applet.Applet {
 	}
 	
 	public static void getPastReveisions(Page page) {
-		String[] temp;
+		if (revisionDepth < 1) {
+			return;
+		}
+		String[] returned;
+		String XMLdata;
+		String revision;
+		String user;
+		String comment;
+		String tempDate;
+		Date date = null;
+		Page tempPage;
+		int j = -1;
+		int k = -1;
 		try {
 			if (getRevisionContent) {
-				temp = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp|content&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
+				returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp|content&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
 			} else {
-				temp = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
+				returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
 			}
 		} catch (IOException e) {
 			return;
 		}
-		System.out.println(temp[0]);
+		XMLdata = compactArray(returned);
+		for (int i = 0; i < revisionDepth; i++) {
+			j = XMLdata.indexOf("<rev user=", k+1);
+			k = XMLdata.indexOf("</rev>", j+1);
+			revision = XMLdata.substring(j, k);
+			user = parseXMLforInfo("user", revision);
+			comment = parseXMLforInfo("comment", revision);
+			tempDate = parseXMLforInfo("timestamp", revision);
+			date = createDate(tempDate);
+			page.addRevision(new Revision(user, comment, date, null));
+		}
+	}
+	
+	static public String parseXMLforInfo (String info, String XMLcode) {
+		//This method aids in XML parsing.
+		int i = XMLcode.indexOf(info);
+		i += info.length() + 2;
+		return XMLcode.substring(i, XMLcode.indexOf("\"", i+1) );
+	}
+	
+	static public String compactArray(String[] array) {
+		String output = "";
+		
+		for (String item: array) {
+			output+=item;
+		}
+		
+		return output;
+	}
+	
+	public static Date createDate(String text) {
+		Date date = null;
+		try {
+			date = dateFormat.parse(text);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return date;
 	}
 	
 	public static void log(String line) {
