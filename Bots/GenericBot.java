@@ -44,6 +44,7 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
+		//webpage = getWikiPage("What the Community is Loving");
 		System.out.println(webpage);
 		printLog();
 	}
@@ -142,7 +143,7 @@ public class GenericBot extends java.applet.Applet {
 			}
 		}
 		parseTemplateTextForLinks(page, temp, text, buffer, pos);
-		parseTextForParameters(page, temp, null, text, buffer, topBuffer, pos, true);
+		parseTextForParameters(page, temp, null, text, buffer+2, topBuffer-1, pos, true);
 		return temp;
 	}
 	
@@ -150,7 +151,7 @@ public class GenericBot extends java.applet.Applet {
 		//We find parameters in templates.
 		String line;
 		int j = -1;
-		int k = -1;
+		int k = buffer;
 		int q;
 		String param = "";
 		for (int i = 0; i < text.size(); i++) {
@@ -179,7 +180,7 @@ public class GenericBot extends java.applet.Applet {
 				
 				if (j == -1 && k != -1) {
 					if (i + 1 == text.size()) {
-						param = line.substring(k+1, topBuffer-1);
+						param = line.substring(k+1, topBuffer);
 					} else {
 						param = line.substring(k+1, line.length());
 					}
@@ -251,13 +252,13 @@ public class GenericBot extends java.applet.Applet {
 					//We have an image!
 					k = i;
 					i = line.indexOf("[[", i+1);
-					j = line.indexOf("]]", k+1);
+					j = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine()-1;
 					if (i > j || i == -1) {
 						i = k;
 					} else {
-						i = findClosingPosition(page, "[[", "]]", new Position(pos.getLine(), k)).getPosInLine();
+						i = j;
 					}
-					Image image = parseImage(page, line, text, i, pos, j+2, inputDataType == 0);
+					Image image = parseImage(page, line, text, i, pos, j, inputDataType == 0);
 					if (image == null) {
 						log("Image Error at: " + pos);
 					} else {
@@ -388,7 +389,7 @@ public class GenericBot extends java.applet.Applet {
 	static public Image parseImage(Page page, String line, String text, int i, Position pos, int topBuffer, boolean pageNotTemp) {
 		//Position, name, parameters, links.
 		Image image = new Image(pos, text);
-		parseTextForParameters(page, null, image, new ArrayList<String>(Arrays.asList(line.substring(pos.getPosInLine()+1, topBuffer+1))), pos.getPosInLine(), topBuffer+1, pos, false);
+		parseTextForParameters(page, null, image, new ArrayList<String>(Arrays.asList(line.substring(pos.getPosInLine()+1, topBuffer+1))), pos.getPosInLine(), topBuffer-1, pos, false);
 		parseLineForLinksImagesCategories(page, null, image, line, pos.getPosInLine()+1, topBuffer+1, pos, 2);
 		return image;
 	}
