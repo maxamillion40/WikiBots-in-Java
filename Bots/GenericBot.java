@@ -520,6 +520,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	@SuppressWarnings("unused")
 	public static void getPastReveisions(Page page) {
+		//This method fetches the revisions of a page.
 		if (revisionDepth < 1) {
 			return;
 		}
@@ -530,6 +531,7 @@ public class GenericBot extends java.applet.Applet {
 		String comment;
 		String tempDate;
 		Date date = null;
+		String content;
 		Page tempPage;
 		int j = -1;
 		int k = -1;
@@ -546,23 +548,28 @@ public class GenericBot extends java.applet.Applet {
 		for (int i = 0; i < revisionDepth; i++) {
 			j = XMLdata.indexOf("<rev user=", k+1);
 			k = XMLdata.indexOf("</rev>", j+1);
-			revision = XMLdata.substring(j, k);
-			user = parseXMLforInfo("user", revision);
-			comment = parseXMLforInfo("comment", revision);
-			tempDate = parseXMLforInfo("timestamp", revision);
+			revision = XMLdata.substring(j, k+6);
+			user = parseXMLforInfo("user", revision, "\"");
+			comment = parseXMLforInfo("comment", revision, "\"");
+			tempDate = parseXMLforInfo("timestamp", revision, "\"");
 			date = createDate(tempDate);
-			page.addRevision(new Revision(user, comment, date, null));
+			content = null;
+			if (getRevisionContent) {
+				content = parseXMLforInfo("xml:space=\"preserve\"", revision, "</rev>");
+			}
+			page.addRevision(new Revision(user, comment, date, content));
 		}
 	}
 	
-	static public String parseXMLforInfo (String info, String XMLcode) {
+	static public String parseXMLforInfo(String info, String XMLcode, String ending) {
 		//This method aids in XML parsing.
 		int i = XMLcode.indexOf(info);
 		i += info.length() + 2;
-		return XMLcode.substring(i, XMLcode.indexOf("\"", i+1) );
+		return XMLcode.substring(i, XMLcode.indexOf(ending, i+1) );
 	}
 	
 	static public String compactArray(String[] array) {
+		//This takes an array of strings and compacts it into one string.
 		String output = "";
 		
 		for (String item: array) {
@@ -573,6 +580,7 @@ public class GenericBot extends java.applet.Applet {
 	}
 	
 	public static Date createDate(String text) {
+		//This takes a wiki date and converts it into a java date.
 		Date date = null;
 		try {
 			date = dateFormat.parse(text);
