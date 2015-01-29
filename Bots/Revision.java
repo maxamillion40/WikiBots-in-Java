@@ -4,9 +4,9 @@ public class Revision {
 	String user;
 	String comment;
 	Date date;
-	Page page = null;
+	String page = null;
 	
-	public Revision(String user_, String comment_, Date date_, Page page_) {
+	public Revision(String user_, String comment_, Date date_, String page_) {
 		user = user_;
 		comment = comment_;
 		date = date_;
@@ -31,14 +31,19 @@ public class Revision {
 		return date;
 	}
 	
+	public String getPage() {
+		return page;
+	}
+	
 	@Override
 	public String toString() {
 		String output;
 
-		output = "(Revision) User: " + user + " Timestamp: " + date + " Comment: " + comment;
+		output = "(Revision";
 		if (page != null) {
-			output += "Page included.";
+			output += " ; Page included";
 		}
+		output += ") User: " + user + " Timestamp: " + date + " Comment: " + comment;
 		
 		return output;
 	}
