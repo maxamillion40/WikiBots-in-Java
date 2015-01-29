@@ -5,7 +5,6 @@
 import java.net.*;
 import java.io.*;
 import java.util.Date;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList; 
@@ -519,6 +518,7 @@ public class GenericBot extends java.applet.Applet {
         return page.toArray(new String[page.size()]);
 	}
 	
+	@SuppressWarnings("unused")
 	public static void getPastReveisions(Page page) {
 		if (revisionDepth < 1) {
 			return;
