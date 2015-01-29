@@ -191,7 +191,7 @@ public class Page {
 		for (int i = 0; i < categories.size(); i++) {
 			output += (categories.get(i) + " , ");
 		}
-		output += "\nWith revision history: \n";
+		output += "\n\nWith revision history: \n";
 		for (int i = 0; i < revisions.size(); i++) {
 			output += (revisions.get(i) + "\n");
 		}
