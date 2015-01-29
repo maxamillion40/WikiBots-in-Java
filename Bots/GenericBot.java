@@ -23,6 +23,8 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> MagicWords = new ArrayList<String>();
 	static ArrayList<String> NonTemplates = new ArrayList<String>();
 	static final int maxI = Integer.MAX_VALUE;
+	static final int revisionDepth = 10;
+	static boolean getRevisionContent = false;
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -43,9 +45,9 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
-		webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		//webpage = getWikiPage("What the Community is Loving");
-		System.out.println(webpage);
+		//webpage = getWikiPage("User:ErnieParke/TestWikiBots");
+		webpage = getWikiPage("Activity Feeds");
+		//System.out.println(webpage);
 		printLog();
 	}
 	
@@ -83,6 +85,7 @@ public class GenericBot extends java.applet.Applet {
 		parsePageForTemplates(newPage);
 		parsePageForLinks(newPage);
 		parsePageForSections(newPage);
+		getPastReveisions(newPage);
 		return newPage;
 	}
 	
@@ -507,6 +510,20 @@ public class GenericBot extends java.applet.Applet {
         }
         in.close();
         return page.toArray(new String[page.size()]);
+	}
+	
+	public static void getPastReveisions(Page page) {
+		String[] temp;
+		try {
+			if (getRevisionContent) {
+				temp = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp|content&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
+			} else {
+				temp = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
+			}
+		} catch (IOException e) {
+			return;
+		}
+		System.out.println(temp[0]);
 	}
 	
 	public static void log(String line) {
