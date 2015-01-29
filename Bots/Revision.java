@@ -1,4 +1,4 @@
-import java.sql.Date;
+import java.util.Date;
 
 public class Revision {
 	String user;
@@ -29,5 +29,17 @@ public class Revision {
 	
 	public Date getDate() {
 		return date;
+	}
+	
+	@Override
+	public String toString() {
+		String output;
+
+		output = "(Revision) User: " + user + " Timestamp: " + date + " Comment: " + comment;
+		if (page != null) {
+			output += "Page included.";
+		}
+		
+		return output;
 	}
 }
