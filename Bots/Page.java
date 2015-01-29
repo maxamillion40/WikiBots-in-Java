@@ -16,6 +16,7 @@ public class Page {
 	ArrayList<Template> templates = new ArrayList<Template>();
 	ArrayList<Image> images = new ArrayList<Image>();
 	ArrayList<String> categories = new ArrayList<String>();
+	ArrayList<Revision> revisions = new ArrayList<Revision>();
 	
 	public Page(String title_, int pageID_) {
 		title = title_;
@@ -59,6 +60,10 @@ public class Page {
 	
 	public void addCategory(String category) {
 		categories.add(category);
+	}
+	
+	public void addRevision(Revision revision) {
+		revisions.add(revision);
 	}
 	
 	//Get information.
@@ -149,6 +154,15 @@ public class Page {
 		return false;
 	}
 	
+	//Revision methods
+	public int getRevisionCount() {
+		return revisions.size();
+	}
+	
+	public Revision getRevision(int i) {
+		return revisions.get(i);
+	}
+	
 	@Override
 	public String toString() {
 		String output;
@@ -176,6 +190,10 @@ public class Page {
 		output += "\nWith categories: \n";
 		for (int i = 0; i < categories.size(); i++) {
 			output += (categories.get(i) + " , ");
+		}
+		output += "\nWith revision history: \n";
+		for (int i = 0; i < revisions.size(); i++) {
+			output += (revisions.get(i) + "\n");
 		}
 		return output;
 	}
