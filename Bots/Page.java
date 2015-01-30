@@ -62,8 +62,8 @@ public class Page {
 		categories.add(category);
 	}
 	
-	public void addRevision(Revision revision) {
-		revisions.add(revision);
+	public void addRevisions(ArrayList<Revision> revisions_) {
+		revisions.addAll(revisions_);
 	}
 	
 	//Get information.
