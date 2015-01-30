@@ -1,22 +1,29 @@
 import java.util.Date;
 
 public class Revision {
+	String title;
 	String user;
 	String comment;
 	Date date;
 	String page = null;
 	
-	public Revision(String user_, String comment_, Date date_, String page_) {
+	public Revision(String title_, String user_, String comment_, Date date_, String page_) {
+		title = title_;
 		user = user_;
 		comment = comment_;
 		date = date_;
 		page = page_;
 	}
 	
-	public Revision(String user_, String comment_, Date date_) {
+	public Revision(String title_, String user_, String comment_, Date date_) {
+		title = title_;
 		user = user_;
 		comment = comment_;
 		date = date_;
+	}
+	
+	public String getTitle() {
+		return title;
 	}
 	
 	public String getUser() {
@@ -42,8 +49,10 @@ public class Revision {
 		output = "(Revision";
 		if (page != null) {
 			output += " ; Page included";
+		} else {
+			output += " ; Page not included";
 		}
-		output += ") User: " + user + " Timestamp: " + date + " Comment: " + comment;
+		output += ") Page: " + title + " User: " + user + " Timestamp: " + date + " Comment: " + comment;
 		
 		return output;
 	}
