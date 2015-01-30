@@ -27,9 +27,10 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> MagicWords = new ArrayList<String>();
 	static ArrayList<String> NonTemplates = new ArrayList<String>();
 	static final int maxI = Integer.MAX_VALUE;
-	static final int revisionDepth = 10;
+	static final int revisionDepth = 100;
+	static final int pageDepth = 2;
 	static boolean getRevisionContent = true;
-	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
+	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
 	
 	public void init() {
 		//This is where all initialization should occur.
@@ -51,8 +52,12 @@ public class GenericBot extends java.applet.Applet {
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
 		//webpage = getWikiPage("User:ErnieParke/TestWikiBots");
-		webpage = getWikiPage("Activity Feeds");
-		System.out.println(webpage);
+		/*webpage = getWikiPage("Activity Feeds");
+		System.out.println(webpage);*/
+		ArrayList<String> page = getCategoryPages("Category:Scratch 1.4");
+		for (int p = 0; p < page.size(); p++) {
+			System.out.println(page.get(p));
+		}
 
 		printLog();
 	}
@@ -532,8 +537,7 @@ public class GenericBot extends java.applet.Applet {
 		String tempDate;
 		Date date = null;
 		String content;
-		Page tempPage;
-		int j = -1;
+		int j = 0;
 		int k = -1;
 		try {
 			if (getRevisionContent) {
@@ -545,20 +549,57 @@ public class GenericBot extends java.applet.Applet {
 			return;
 		}
 		XMLdata = compactArray(returned);
-		for (int i = 0; i < revisionDepth; i++) {
+		
+		//Parse page for info.
+		for (int i = 0; i < revisionDepth && j != -1; i++) {
 			j = XMLdata.indexOf("<rev user=", k+1);
 			k = XMLdata.indexOf("</rev>", j+1);
-			revision = XMLdata.substring(j, k+6);
-			user = parseXMLforInfo("user", revision, "\"");
-			comment = parseXMLforInfo("comment", revision, "\"");
-			tempDate = parseXMLforInfo("timestamp", revision, "\"");
-			date = createDate(tempDate);
-			content = null;
-			if (getRevisionContent) {
-				content = parseXMLforInfo("xml:space=\"preserve\"", revision, "</rev>");
+			if (j != -1) {
+				//Error catching.
+				revision = XMLdata.substring(j, k+6);
+				user = parseXMLforInfo("user", revision, "\"");
+				comment = parseXMLforInfo("comment", revision, "\"");
+				tempDate = parseXMLforInfo("timestamp", revision, "\"");
+				date = createDate(tempDate);
+				content = null;
+				if (getRevisionContent) {
+					content = parseXMLforInfo("xml:space=\"preserve\"", revision, "</rev>");
+				}
+				page.addRevision(new Revision(user, comment, date, content));
 			}
-			page.addRevision(new Revision(user, comment, date, content));
 		}
+	}
+	
+	public static ArrayList<String> getCategoryPages(String category) {
+		//This method gets the name of all pages and categories in a category.
+		//Should accept "Categroy: Cats" and "Cats"  as equivalent.
+		String[] page;
+		String XMLdata;
+		String tempPage;
+		ArrayList<String> output = new ArrayList<String>();
+		int j = 0;
+		int k = -1;
+		if (!(category.length() > 8 && category.substring(0,9).equals("Category:"))) {
+			category = "Category:" + category;
+		}
+		try {
+			page = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&list=categorymembers&cmtitle=" + URLEncoder.encode(category, "UTF-8") + "&cmlimit=" + pageDepth);
+		} catch (IOException e) {
+			return null;
+		}		
+		XMLdata = compactArray(page);
+
+		//Parse page for info.
+		for (int i = 0; i < pageDepth && j != -1; i++) {
+			j = XMLdata.indexOf("<cm pageid=", k+1);
+			k = XMLdata.indexOf("/>", j+1);
+			if (j != -1) {
+				//Error catching.
+				tempPage = XMLdata.substring(j, k+6);
+				output.add(parseXMLforInfo("title", tempPage, "\""));
+			}
+		}
+		return output;
 	}
 	
 	static public String parseXMLforInfo(String info, String XMLcode, String ending) {
