@@ -30,7 +30,7 @@ public class GenericBot extends java.applet.Applet {
 	static final int revisionDepth = 10;
 	static final int pageDepth = 20;
 	static final int recentChangesDepth = 40;
-	static boolean getRevisionContent = true;
+	static boolean getRevisionContent = false;
 	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
 	
 	public void init() {
@@ -52,13 +52,8 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
-		//webpage = getWikiPage("User:ErnieParke/TestWikiBots");
 		webpage = getWikiPage("Activity Feeds");
 		System.out.println(webpage);
-		/*ArrayList<String> page = getPagesThatLinkTo("Scratch 1.4");
-		for (int p = 0; p < page.size(); p++) {
-			System.out.println(page.get(p));
-		}*/
 
 		printLog();
 	}
@@ -472,7 +467,7 @@ public class GenericBot extends java.applet.Applet {
 		return new Position(l, k+1);
 	}
 	
-	public static void parsePageForSections(Page page) {
+	static public void parsePageForSections(Page page) {
 		//Position, title, depth.
 		ArrayList<String> content = page.getContent();
 		String line;
@@ -524,50 +519,77 @@ public class GenericBot extends java.applet.Applet {
         return page.toArray(new String[page.size()]);
 	}
 	
-	public static void getPastReveisions(Page page) {
+	static public void getPastReveisions(Page page) {
 		//This method fetches the revisions of a page.
 		String[] returned;
-		String XMLdata;
+		try {
+			if (getRevisionContent) {
+				returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp|content&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
+				
+				//Parse page for info.
+				page.addRevisions(getRevisions(compactArray(returned), "<rev user=", "</rev>", true, page.getTitle()));
+			} else {
+				returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
+				
+				//Parse page for info.
+				page.addRevisions(getRevisions(compactArray(returned), "<rev user=", "/>", true, page.getTitle()));
+			}
+		} catch (IOException e) {
+			return;
+		}
+	}
+	
+	static public ArrayList<Revision> getRecentChanges() {
+		//This method fetches the recent changes.
+		String[] returned;
+		try {
+			returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&list=recentchanges&rcprop=timestamp|title|user|comment&rclimit=" + recentChangesDepth);
+		} catch (IOException e) {
+			return null;
+		}
+		
+		//Parse page for info.
+		return getRevisions(compactArray(returned), "<rc type=", "/>", false, null);
+	}
+	
+	static public ArrayList<Revision> getRevisions(String XMLdata, String openingText, String closingText, boolean includeContent, String forceTitle) {
+		//This method takes XML data and parses it for revsisions.
+		ArrayList<Revision> output = new ArrayList<Revision>();
 		String revision;
 		String user;
 		String comment;
 		String tempDate;
 		Date date = null;
 		String content;
+		String title;
 		int j = 0;
 		int k = -1;
-		try {
-			if (getRevisionContent) {
-				returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp|content&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
-			} else {
-				returned = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&prop=revisions&pageids=" + page.getPageID() + "&rvprop=user|comment|timestamp&rvstartid=1000000000&rvendid=1&rvlimit=" + revisionDepth);
-			}
-		} catch (IOException e) {
-			return;
-		}
-		XMLdata = compactArray(returned);
-		
-		//Parse page for info.
 		for (int i = 0; i < revisionDepth && j != -1; i++) {
-			j = XMLdata.indexOf("<rev user=", k+1);
-			k = XMLdata.indexOf("</rev>", j+1);
+			j = XMLdata.indexOf(openingText, k+1);
+			k = XMLdata.indexOf(closingText, j+1);
 			if (j != -1) {
-				//Error catching.
+				//No errors detected.
 				revision = XMLdata.substring(j, k+6);
 				user = parseXMLforInfo("user", revision, "\"");
 				comment = parseXMLforInfo("comment", revision, "\"");
 				tempDate = parseXMLforInfo("timestamp", revision, "\"");
 				date = createDate(tempDate);
 				content = null;
-				if (getRevisionContent) {
+				if (getRevisionContent && includeContent) {
 					content = parseXMLforInfo("xml:space=\"preserve\"", revision, "</rev>");
 				}
-				page.addRevision(new Revision(user, comment, date, content));
+				if (forceTitle == null) {
+					title = tempDate = parseXMLforInfo("title", revision, "\"");
+					output.add(new Revision(title, user, comment, date, content));
+				} else {
+					output.add(new Revision(forceTitle, user, comment, date, content));
+				}
 			}
 		}
+		return output;
 	}
 	
-	public static ArrayList<String> getCategoryPages(String category) {
+	static public ArrayList<String> getCategoryPages(String category) {
 		//This method gets the name of all pages and categories in a category.
 		//Should accept "Categroy: Cats" and "Cats"  as equivalent.
 		String[] page;
@@ -586,7 +608,7 @@ public class GenericBot extends java.applet.Applet {
 		return getPages(XMLdata, "<cm pageid=", "/>");
 	}
 	
-	public static ArrayList<String> getPagesThatLinkTo(String pageName) {
+	static public ArrayList<String> getPagesThatLinkTo(String pageName) {
 		//This method gets all the pages that link to another page. Redirects are included.
 		String[] page;
 		String XMLdata;
@@ -602,6 +624,7 @@ public class GenericBot extends java.applet.Applet {
 	}
 	
 	static public ArrayList<String> getPages(String XMLdata, String openingText, String closingText) {
+		//This method takes XMLdata and parses it for page names.
 		ArrayList<String> output = new ArrayList<String>();
 		int j = 0;
 		int k = -1;
@@ -611,7 +634,7 @@ public class GenericBot extends java.applet.Applet {
 			j = XMLdata.indexOf(openingText, k+1);
 			k = XMLdata.indexOf(closingText, j+1);
 			if (j != -1) {
-				//Error catching.
+				//No errors detected.
 				temp = XMLdata.substring(j, k+6);
 				output.add(parseXMLforInfo("title", temp, "\""));
 			}
@@ -623,7 +646,12 @@ public class GenericBot extends java.applet.Applet {
 		//This method aids in XML parsing.
 		int i = XMLcode.indexOf(info);
 		i += info.length() + 2;
-		return XMLcode.substring(i, XMLcode.indexOf(ending, i+1) );
+		int j = XMLcode.indexOf(ending, i+1);
+		if (j != -1) {
+			return XMLcode.substring(i,  j);
+		} else {
+			return "";
+		}
 	}
 	
 	static public String compactArray(String[] array) {
@@ -637,7 +665,7 @@ public class GenericBot extends java.applet.Applet {
 		return output;
 	}
 	
-	public static Date createDate(String text) {
+	static public Date createDate(String text) {
 		//This takes a wiki date and converts it into a java date.
 		Date date = null;
 		try {
@@ -649,11 +677,11 @@ public class GenericBot extends java.applet.Applet {
 		return date;
 	}
 	
-	public static void log(String line) {
+	static public void log(String line) {
 		log.add(line);
 	}
 	
-	public static void printLog() {
+	static public void printLog() {
 		System.out.println("Log:");
 		for (int i = 0; i < log.size(); i++) {
 			System.out.println(log.get(i));
