@@ -28,7 +28,7 @@ public class GenericBot extends java.applet.Applet {
 	static ArrayList<String> NonTemplates = new ArrayList<String>();
 	static final int maxI = Integer.MAX_VALUE;
 	static final int revisionDepth = 100;
-	static final int pageDepth = 2;
+	static final int pageDepth = 20;
 	static boolean getRevisionContent = true;
 	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
 	
@@ -54,7 +54,7 @@ public class GenericBot extends java.applet.Applet {
 		//webpage = getWikiPage("User:ErnieParke/TestWikiBots");
 		/*webpage = getWikiPage("Activity Feeds");
 		System.out.println(webpage);*/
-		ArrayList<String> page = getCategoryPages("Category:Scratch 1.4");
+		ArrayList<String> page = getPagesThatLinkTo("Scratch 1.4");
 		for (int p = 0; p < page.size(); p++) {
 			System.out.println(page.get(p));
 		}
@@ -523,12 +523,8 @@ public class GenericBot extends java.applet.Applet {
         return page.toArray(new String[page.size()]);
 	}
 	
-	@SuppressWarnings("unused")
 	public static void getPastReveisions(Page page) {
 		//This method fetches the revisions of a page.
-		if (revisionDepth < 1) {
-			return;
-		}
 		String[] returned;
 		String XMLdata;
 		String revision;
@@ -592,6 +588,34 @@ public class GenericBot extends java.applet.Applet {
 		//Parse page for info.
 		for (int i = 0; i < pageDepth && j != -1; i++) {
 			j = XMLdata.indexOf("<cm pageid=", k+1);
+			k = XMLdata.indexOf("/>", j+1);
+			if (j != -1) {
+				//Error catching.
+				tempPage = XMLdata.substring(j, k+6);
+				output.add(parseXMLforInfo("title", tempPage, "\""));
+			}
+		}
+		return output;
+	}
+	
+	public static ArrayList<String> getPagesThatLinkTo(String pageName) {
+		//This method gets all the pages that link to another page. Redirects are included.
+		String[] page;
+		String XMLdata;
+		String tempPage;
+		ArrayList<String> output = new ArrayList<String>();
+		int j = 0;
+		int k = -1;
+		try {
+			page = getURL("http://wiki.scratch.mit.edu/w/api.php?format=xml&action=query&list=backlinks&bltitle=" + URLEncoder.encode(pageName, "UTF-8") + "&bllimit=" + pageDepth);
+		} catch (IOException e) {
+			return null;
+		}		
+		XMLdata = compactArray(page);
+
+		//Parse page for info.
+		for (int i = 0; i < pageDepth && j != -1; i++) {
+			j = XMLdata.indexOf("<bl pageid=", k+1);
 			k = XMLdata.indexOf("/>", j+1);
 			if (j != -1) {
 				//Error catching.
