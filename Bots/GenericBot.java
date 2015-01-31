@@ -190,7 +190,6 @@ public class GenericBot extends java.applet.Applet {
 				
 				if (j == -1 && k != -1) {
 					if (i + 1 == text.size()) {
-						System.out.println(line.length() + ":" + line);
 						param = line.substring(k+1, topBuffer);
 					} else {
 						param = line.substring(k+1, line.length());
