@@ -52,7 +52,7 @@ public class GenericBot extends java.applet.Applet {
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
-		webpage = getWikiPage("Activity Feeds");
+		webpage = getWikiPage("Scratch Cat");
 		System.out.println(webpage);
 
 		printLog();
@@ -85,7 +85,7 @@ public class GenericBot extends java.applet.Applet {
 				line = XMLcode.substring(i+2, j);
 				newPage.addLine(line);
 			} else {
-				line = XMLcode.substring(i+2, XMLcode.indexOf("\"}]"));
+				line = XMLcode.substring(i+2, XMLcode.indexOf("\"}]}"));
 				newPage.addLine(line);
 			}
 		}
