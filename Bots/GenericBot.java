@@ -164,7 +164,7 @@ public class GenericBot extends java.applet.Applet {
 		int k = buffer;
 		int q;
 		String param = "";
-		/*for (int i = 0; i < text.size(); i++) {
+		for (int i = 0; i < text.size(); i++) {
 			//This for loop goes through a line at a time.
 			line = text.get(i);
 			if (i == 0) {
@@ -190,6 +190,7 @@ public class GenericBot extends java.applet.Applet {
 				
 				if (j == -1 && k != -1) {
 					if (i + 1 == text.size()) {
+						System.out.println(line.length() + ":" + line);
 						param = line.substring(k+1, topBuffer);
 					} else {
 						param = line.substring(k+1, line.length());
@@ -211,7 +212,7 @@ public class GenericBot extends java.applet.Applet {
 			}
 			j = -1;
 			k = -1;
-		}*/
+		}
 	}
 	
 	static void parseTemplateTextForLinks(Page page, Template temp, ArrayList<String> lines, int buffer, Position pos) {
@@ -313,7 +314,6 @@ public class GenericBot extends java.applet.Applet {
 					i = line.indexOf("[[", k+1);
 				}
 				k = line.indexOf("[", k+1);
-
 			}
 		}
 	}
@@ -399,7 +399,7 @@ public class GenericBot extends java.applet.Applet {
 	static public Image parseImage(Page page, String line, String text, int i, Position pos, int topBuffer, boolean pageNotTemp) {
 		//Position, name, parameters, links.
 		Image image = new Image(pos, text);
-		parseTextForParameters(page, null, image, new ArrayList<String>(Arrays.asList(line.substring(pos.getPosInLine()+1, topBuffer+1))), pos.getPosInLine(), topBuffer-1, pos, false);
+		parseTextForParameters(page, null, image, new ArrayList<String>(Arrays.asList(line.substring(pos.getPosInLine()+1, topBuffer+1))), 0, topBuffer-1-pos.getPosInLine(), pos, false);
 		parseLineForLinksImagesCategories(page, null, image, line, pos.getPosInLine()+1, topBuffer+1, pos, 2);
 		return image;
 	}
