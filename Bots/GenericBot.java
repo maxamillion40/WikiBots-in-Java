@@ -47,15 +47,16 @@ public class GenericBot extends java.applet.Applet {
 		g.setColor(Color.BLACK);
 		g.drawString("Applet background", 0, 50);
 		//Call main method here in children.
-		main(null);
 	}
 	
 	static public void main(String[] args) {
 		//This is where code will be put for children. Clear (but don't delete) once class completed.
-		webpage = getWikiPage("Scratch Cat");
-		System.out.println(webpage);
-
-		printLog();
+		/*
+		 * Nice test code:
+		 * webpage = getWikiPage("Scratch Cat");
+		 * System.out.println(webpage);
+		 * printLog();
+		 */
 	}
 	
 	static public Page getWikiPage(String name) {
