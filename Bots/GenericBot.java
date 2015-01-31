@@ -164,7 +164,7 @@ public class GenericBot extends java.applet.Applet {
 		int k = buffer;
 		int q;
 		String param = "";
-		for (int i = 0; i < text.size(); i++) {
+		/*for (int i = 0; i < text.size(); i++) {
 			//This for loop goes through a line at a time.
 			line = text.get(i);
 			if (i == 0) {
@@ -211,7 +211,7 @@ public class GenericBot extends java.applet.Applet {
 			}
 			j = -1;
 			k = -1;
-		}
+		}*/
 	}
 	
 	static void parseTemplateTextForLinks(Page page, Template temp, ArrayList<String> lines, int buffer, Position pos) {
@@ -268,7 +268,7 @@ public class GenericBot extends java.applet.Applet {
 					} else {
 						i = j;
 					}
-					Image image = parseImage(page, line, text, i, pos, j, inputDataType == 0);
+					Image image = parseImage(page, line, text, i, new Position(pos.getLine(), i), j, inputDataType == 0);
 					if (image == null) {
 						log("Image Error at: " + pos);
 					} else {
